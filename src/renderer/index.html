@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fin-Gen Desktop</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <span>IMG Pro</span>
+        </div>
+        <nav>
+          <div class="nav-item active">Home</div>
+          <div class="nav-item">Conversion Tools</div>
+          <div class="nav-item">Remove Background</div>
+          <div class="nav-item">Optimization</div>
+          <div class="nav-item">Settings</div>
+        </nav>
+      </aside>
+      <main class="content">
+        <header>
+          <h1>IMGPro Home</h1>
+        </header>
+      </main>
+    </div>
+
+    <!-- Wizard Modal Container (Global) -->
+    <div id="wizard-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div id="wizard-step-container"></div>
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

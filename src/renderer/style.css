@@ -1,0 +1,132 @@
+:root {
+  --bg-dark: #f3f2f1;
+  --bg-card: #ffffff;
+  --accent: #f76420;
+  --accent-hover: #e69832;
+  --text-primary: #252423;
+  --text-secondary: #605e5c;
+  --success: #107c41;
+  --danger: #a4262c;
+  --sidebar-width: 260px;
+  --border-color: #e1dfdd;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system,
+    BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: #ffffff;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: var(--accent);
+  padding: 0 0.5rem;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  background-color: var(--accent);
+  border-radius: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.logo-icon::after {
+  content: "IMG";
+}
+
+.nav-item {
+  padding: 8px 12px;
+  border-radius: 0px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+}
+
+.nav-item:hover {
+  background-color: #f3f2f1;
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background-color: #f2ece6; /* Light orange background */
+  color: var(--accent);
+  font-weight: 600;
+  border-left: 3px solid var(--accent);
+}
+
+/* Content */
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background-color: #faf9f8;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.primary-btn {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 0px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  font-size: 0.9rem;
+}
+
+.primary-btn:hover {
+  background-color: var(--accent-hover);
+}
