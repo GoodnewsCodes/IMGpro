@@ -8,6 +8,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     format: string;
     quality?: number;
   }) => ipcRenderer.invoke("convert-image", data),
+  optimizeImage: (data: {
+    buffer: Uint8Array;
+    format?: string;
+    quality?: number;
+    preset?: "small" | "balanced" | "high";
+  }) => ipcRenderer.invoke("optimize-image", data),
   selectSavePath: (defaultPath: string) =>
     ipcRenderer.invoke("select-save-path", defaultPath),
   saveFile: (data: { filePath: string; buffer: Uint8Array }) =>

@@ -695,18 +695,27 @@
                 <div class="preview-item">
                   <h3>Original</h3>
                   <img id="opt-original-preview" src="" alt="Original" />
+                  <div class="image-info" id="opt-original-info"></div>
                 </div>
                 <div class="preview-item">
                   <h3>Settings & Result</h3>
                   <div class="settings-panel">
                     <div class="setting-group">
+                      <label for="opt-preset-select">Optimization Preset</label>
+                      <select id="opt-preset-select" class="select-input">
+                        <option value="balanced">Balanced (Recommended)</option>
+                        <option value="small">Small File Size (Web)</option>
+                        <option value="high">High Quality</option>
+                      </select>
+                    </div>
+                    <div class="setting-group">
                       <label for="opt-format-select">Output Format</label>
                       <select id="opt-format-select" class="select-input">
                         <option value="">Keep Original Format</option>
+                        <option value="webp">WebP (Best for Web)</option>
+                        <option value="avif">AVIF (Next-Gen)</option>
                         <option value="jpg">JPEG</option>
                         <option value="png">PNG</option>
-                        <option value="webp">WebP</option>
-                        <option value="avif">AVIF</option>
                       </select>
                     </div>
                     <div class="setting-group">
@@ -725,6 +734,7 @@
                   </div>
                   <div id="opt-result-wrapper" class="hidden">
                     <img id="opt-result-preview" src="" alt="Result" />
+                    <div class="image-info" id="opt-result-info"></div>
                     <div id="opt-loading-overlay" class="hidden">
                       <div class="spinner"></div>
                       <p id="opt-loading-text">Optimizing...</p>

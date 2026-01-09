@@ -274,6 +274,75 @@ electron_1.ipcMain.handle("generate-ico", async (_event, buffers) => {
         return { success: false, error: error.message };
     }
 });
+electron_1.ipcMain.handle("optimize-image", async (_event, { buffer, format, quality = 80, preset = "balanced", }) => {
+    try {
+        let pipeline = (0, sharp_1.default)(Buffer.from(buffer));
+        const metadata = await pipeline.metadata();
+        const targetFormat = (format || metadata.format || "png").toLowerCase();
+        // Optimization settings based on preset
+        let effort = 4; // Default effort for WebP/AVIF
+        if (preset === "small")
+            effort = 6;
+        if (preset === "high")
+            effort = 2;
+        switch (targetFormat) {
+            case "jpeg":
+            case "jpg":
+                pipeline = pipeline.jpeg({
+                    quality,
+                    mozjpeg: true,
+                    progressive: true,
+                });
+                break;
+            case "png":
+                pipeline = pipeline.png({
+                    compressionLevel: 9,
+                    palette: preset === "small", // Use palette for smaller PNGs if requested
+                    quality: preset === "small" ? 80 : 100,
+                });
+                break;
+            case "webp":
+                pipeline = pipeline.webp({
+                    quality,
+                    effort,
+                    lossless: false,
+                    smartSubsample: true,
+                });
+                break;
+            case "avif":
+                pipeline = pipeline.avif({
+                    quality,
+                    effort,
+                    chromaSubsampling: preset === "small" ? "4:2:0" : "4:4:4",
+                });
+                break;
+            case "svg":
+                // If it's already SVG, we can't do much with sharp without rasterizing.
+                // For now, if the input is SVG, we just return it.
+                // If not, we don't support converting TO SVG via optimization (use conversion tool instead)
+                if (metadata.format === "svg") {
+                    return { success: true, buffer };
+                }
+                throw new Error("Cannot optimize to SVG from raster format.");
+            default:
+                // Fallback to basic conversion
+                if (targetFormat === "webp")
+                    pipeline = pipeline.webp({ quality });
+                else if (targetFormat === "avif")
+                    pipeline = pipeline.avif({ quality });
+                else if (targetFormat === "png")
+                    pipeline = pipeline.png();
+                else
+                    pipeline = pipeline.jpeg({ quality });
+        }
+        const outputBuffer = await pipeline.toBuffer();
+        return { success: true, buffer: outputBuffer };
+    }
+    catch (error) {
+        console.error("Optimization error:", error);
+        return { success: false, error: error.message };
+    }
+});
 // remove.bg API handlers
 const REMOVE_BG_KEY_PATH = path.join(electron_1.app.getPath("userData"), "removebg_key");
 electron_1.ipcMain.handle("get-remove-bg-key", async () => {

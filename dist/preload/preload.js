@@ -4,6 +4,7 @@ const electron_1 = require("electron");
 electron_1.contextBridge.exposeInMainWorld("electronAPI", {
     ping: () => electron_1.ipcRenderer.invoke("ping"),
     convertImage: (data) => electron_1.ipcRenderer.invoke("convert-image", data),
+    optimizeImage: (data) => electron_1.ipcRenderer.invoke("optimize-image", data),
     selectSavePath: (defaultPath) => electron_1.ipcRenderer.invoke("select-save-path", defaultPath),
     saveFile: (data) => electron_1.ipcRenderer.invoke("save-file", data),
     resizeImage: (data) => electron_1.ipcRenderer.invoke("resize-image", data),

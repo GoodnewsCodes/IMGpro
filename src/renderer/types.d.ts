@@ -10,6 +10,12 @@ declare global {
         format: string;
         quality?: number;
       }) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
+      optimizeImage: (data: {
+        buffer: Uint8Array;
+        format?: string;
+        quality?: number;
+        preset?: "small" | "balanced" | "high";
+      }) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
       resizeImage: (data: {
         inputPath?: string;
         buffer?: Uint8Array;
