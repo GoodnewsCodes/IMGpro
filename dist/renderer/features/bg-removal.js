@@ -13,6 +13,7 @@ function initBgRemoval() {
     const resetBtn = document.getElementById("reset-btn");
     const loadingOverlay = document.getElementById("loading-overlay");
     const loadingText = document.getElementById("loading-text");
+    const removeBgApiBtn = document.getElementById("remove-bg-api-btn");
     let selectedFile = null;
     let processedBlob = null;
     if (!fileInput ||
@@ -24,7 +25,8 @@ function initBgRemoval() {
         !downloadBtn ||
         !resetBtn ||
         !loadingOverlay ||
-        !loadingText) {
+        !loadingText ||
+        !removeBgApiBtn) {
         console.error("Background removal elements not found");
         return;
     }
@@ -71,6 +73,7 @@ function initBgRemoval() {
             dropZone.classList.add("hidden");
             resultPreview.src = "";
             downloadBtn.classList.add("hidden");
+            removeBgApiBtn.classList.add("hidden");
         };
         reader.readAsDataURL(file);
     }
@@ -81,17 +84,18 @@ function initBgRemoval() {
         try {
             loadingOverlay.classList.remove("hidden");
             processBtn.disabled = true;
-            loadingText.textContent = "Removing background...";
-            const result = await (0, background_removal_1.removeBackground)(selectedFile, {
-                progress: (key, current, total) => {
-                    const percent = total ? Math.round((current / total) * 100) : 0;
-                    loadingText.textContent = `Processing: ${percent}%`;
+            loadingText.textContent = "Removing background (High Quality)...";
+            processedBlob = await (0, background_removal_1.removeBackground)(selectedFile, {
+                model: "isnet",
+                output: {
+                    format: "image/png",
+                    type: "foreground",
                 },
             });
-            processedBlob = result;
-            const url = URL.createObjectURL(result);
+            const url = URL.createObjectURL(processedBlob);
             resultPreview.src = url;
             downloadBtn.classList.remove("hidden");
+            removeBgApiBtn.classList.remove("hidden");
         }
         catch (error) {
             console.error("Background removal failed:", error);
@@ -100,6 +104,38 @@ function initBgRemoval() {
         finally {
             loadingOverlay.classList.add("hidden");
             processBtn.disabled = false;
+        }
+    });
+    // Handle remove.bg API processing
+    removeBgApiBtn.addEventListener("click", async () => {
+        if (!selectedFile)
+            return;
+        try {
+            loadingOverlay.classList.remove("hidden");
+            processBtn.disabled = true;
+            removeBgApiBtn.disabled = true;
+            loadingText.textContent = "Removing background (remove.bg API)...";
+            const arrayBuffer = await selectedFile.arrayBuffer();
+            const buffer = new Uint8Array(arrayBuffer);
+            const result = await window.electronAPI.removeBgApi(buffer);
+            if (result.success && result.buffer) {
+                processedBlob = new Blob([result.buffer], { type: "image/png" });
+                const url = URL.createObjectURL(processedBlob);
+                resultPreview.src = url;
+                downloadBtn.classList.remove("hidden");
+            }
+            else {
+                throw new Error(result.error || "API call failed");
+            }
+        }
+        catch (error) {
+            console.error("remove.bg API failed:", error);
+            alert("Failed to remove background via API: " + error.message);
+        }
+        finally {
+            loadingOverlay.classList.add("hidden");
+            processBtn.disabled = false;
+            removeBgApiBtn.disabled = false;
         }
     });
     // Handle download
@@ -130,5 +166,6 @@ function initBgRemoval() {
         previewContainer.classList.add("hidden");
         dropZone.classList.remove("hidden");
         downloadBtn.classList.add("hidden");
+        removeBgApiBtn.classList.add("hidden");
     });
 }

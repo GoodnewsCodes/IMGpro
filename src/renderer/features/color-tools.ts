@@ -198,10 +198,23 @@ export function initColorTools() {
           // Normalize tolerance to this range (0-100 -> 0-442)
           const normalizedTolerance = (tolerance / 100) * 442;
 
+          // Soft edge blending
+          const feather = 5; // Reduced from 20 to 5 to avoid fading on sharp images
+          const lowerBound = Math.max(0, normalizedTolerance - feather);
+
           if (diff <= normalizedTolerance) {
-            data[i] = targetRgb.r;
-            data[i + 1] = targetRgb.g;
-            data[i + 2] = targetRgb.b;
+            let alpha = 1; // 1 means full replacement
+
+            if (diff > lowerBound) {
+              // Linear fade out at the edge
+              alpha =
+                1 - (diff - lowerBound) / (normalizedTolerance - lowerBound);
+            }
+
+            // Blend with original color
+            data[i] = targetRgb.r * alpha + data[i] * (1 - alpha);
+            data[i + 1] = targetRgb.g * alpha + data[i + 1] * (1 - alpha);
+            data[i + 2] = targetRgb.b * alpha + data[i + 2] * (1 - alpha);
           }
         }
 

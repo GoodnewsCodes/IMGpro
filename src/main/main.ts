@@ -4,6 +4,7 @@ import {
   ipcMain,
   dialog,
   IpcMainInvokeEvent,
+  safeStorage,
 } from "electron";
 import * as path from "path";
 import sharp from "sharp";
@@ -21,7 +22,7 @@ function createWindow() {
     },
     show: false,
     backgroundColor: "#0f172a", // Slate 900
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
   });
 
   // Remove the menu bar
@@ -346,3 +347,74 @@ ipcMain.handle(
     }
   }
 );
+
+// remove.bg API handlers
+const REMOVE_BG_KEY_PATH = path.join(app.getPath("userData"), "removebg_key");
+
+ipcMain.handle("get-remove-bg-key", async () => {
+  try {
+    if (!fs.existsSync(REMOVE_BG_KEY_PATH)) return null;
+    const encryptedKey = await fs.promises.readFile(REMOVE_BG_KEY_PATH);
+    if (!safeStorage.isEncryptionAvailable()) return null;
+    return safeStorage.decryptString(encryptedKey);
+  } catch (error) {
+    console.error("Failed to get remove.bg key:", error);
+    return null;
+  }
+});
+
+ipcMain.handle("set-remove-bg-key", async (_event, key: string) => {
+  try {
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error("Encryption is not available on this system.");
+    }
+    const encryptedKey = safeStorage.encryptString(key);
+    await fs.promises.writeFile(REMOVE_BG_KEY_PATH, encryptedKey);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to set remove.bg key:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("remove-bg-api", async (_event, buffer: Uint8Array) => {
+  try {
+    if (!fs.existsSync(REMOVE_BG_KEY_PATH)) {
+      throw new Error("API key not found. Please set it in settings.");
+    }
+    const encryptedKey = await fs.promises.readFile(REMOVE_BG_KEY_PATH);
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error("Encryption is not available.");
+    }
+    const apiKey = safeStorage.decryptString(encryptedKey);
+
+    const formData = new FormData();
+    formData.append("size", "auto");
+    formData.append(
+      "image_file",
+      new Blob([Buffer.from(buffer)], { type: "image/png" }),
+      "image.png"
+    );
+
+    const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+      method: "POST",
+      headers: {
+        "X-Api-Key": apiKey,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.errors?.[0]?.title || "Failed to remove background via API"
+      );
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return { success: true, buffer: new Uint8Array(arrayBuffer) };
+  } catch (error: any) {
+    console.error("remove.bg API error:", error);
+    return { success: false, error: error.message };
+  }
+});

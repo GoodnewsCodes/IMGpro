@@ -32,4 +32,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("mirror-image", data),
   generateIco: (buffers: Uint8Array[]) =>
     ipcRenderer.invoke("generate-ico", buffers),
+  getRemoveBgKey: () => ipcRenderer.invoke("get-remove-bg-key"),
+  setRemoveBgKey: (key: string) => ipcRenderer.invoke("set-remove-bg-key", key),
+  removeBgApi: (buffer: Uint8Array) =>
+    ipcRenderer.invoke("remove-bg-api", buffer),
 });

@@ -27385,9 +27385,12 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const loadingText = document.getElementById(
       "loading-text"
     );
+    const removeBgApiBtn = document.getElementById(
+      "remove-bg-api-btn"
+    );
     let selectedFile = null;
     let processedBlob = null;
-    if (!fileInput || !dropZone || !previewContainer || !originalPreview || !resultPreview || !processBtn || !downloadBtn || !resetBtn || !loadingOverlay || !loadingText) {
+    if (!fileInput || !dropZone || !previewContainer || !originalPreview || !resultPreview || !processBtn || !downloadBtn || !resetBtn || !loadingOverlay || !loadingText || !removeBgApiBtn) {
       console.error("Background removal elements not found");
       return;
     }
@@ -27431,6 +27434,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         dropZone.classList.add("hidden");
         resultPreview.src = "";
         downloadBtn.classList.add("hidden");
+        removeBgApiBtn.classList.add("hidden");
       };
       reader.readAsDataURL(file);
     }
@@ -27439,23 +27443,51 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       try {
         loadingOverlay.classList.remove("hidden");
         processBtn.disabled = true;
-        loadingText.textContent = "Removing background...";
-        const result = await removeBackground(selectedFile, {
-          progress: (key, current, total) => {
-            const percent = total ? Math.round(current / total * 100) : 0;
-            loadingText.textContent = `Processing: ${percent}%`;
+        loadingText.textContent = "Removing background (High Quality)...";
+        processedBlob = await removeBackground(selectedFile, {
+          model: "isnet",
+          output: {
+            format: "image/png",
+            type: "foreground"
           }
         });
-        processedBlob = result;
-        const url = URL.createObjectURL(result);
+        const url = URL.createObjectURL(processedBlob);
         resultPreview.src = url;
         downloadBtn.classList.remove("hidden");
+        removeBgApiBtn.classList.remove("hidden");
       } catch (error) {
         console.error("Background removal failed:", error);
         alert("Failed to remove background. Please try again.");
       } finally {
         loadingOverlay.classList.add("hidden");
         processBtn.disabled = false;
+      }
+    });
+    removeBgApiBtn.addEventListener("click", async () => {
+      if (!selectedFile) return;
+      try {
+        loadingOverlay.classList.remove("hidden");
+        processBtn.disabled = true;
+        removeBgApiBtn.disabled = true;
+        loadingText.textContent = "Removing background (remove.bg API)...";
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        const result = await window.electronAPI.removeBgApi(buffer);
+        if (result.success && result.buffer) {
+          processedBlob = new Blob([result.buffer], { type: "image/png" });
+          const url = URL.createObjectURL(processedBlob);
+          resultPreview.src = url;
+          downloadBtn.classList.remove("hidden");
+        } else {
+          throw new Error(result.error || "API call failed");
+        }
+      } catch (error) {
+        console.error("remove.bg API failed:", error);
+        alert("Failed to remove background via API: " + error.message);
+      } finally {
+        loadingOverlay.classList.add("hidden");
+        processBtn.disabled = false;
+        removeBgApiBtn.disabled = false;
       }
     });
     downloadBtn.addEventListener("click", async () => {
@@ -27483,6 +27515,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       previewContainer.classList.add("hidden");
       dropZone.classList.remove("hidden");
       downloadBtn.classList.add("hidden");
+      removeBgApiBtn.classList.add("hidden");
     });
   }
 
@@ -27537,6 +27570,30 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       applyTheme(newSettings.theme);
       alert("Settings saved successfully!");
     });
+    const removeBgKeyInput = document.getElementById(
+      "remove-bg-key-input"
+    );
+    const saveApiKeyBtn = document.getElementById("save-api-key-btn");
+    if (removeBgKeyInput && saveApiKeyBtn) {
+      window.electronAPI.getRemoveBgKey().then((key) => {
+        if (key) {
+          removeBgKeyInput.value = key;
+        }
+      });
+      saveApiKeyBtn.addEventListener("click", async () => {
+        const key = removeBgKeyInput.value.trim();
+        if (!key) {
+          alert("Please enter an API key.");
+          return;
+        }
+        const result = await window.electronAPI.setRemoveBgKey(key);
+        if (result.success) {
+          alert("API key saved securely!");
+        } else {
+          alert("Failed to save API key: " + result.error);
+        }
+      });
+    }
   }
   function applyTheme(theme) {
     if (theme === "dark") {
@@ -28065,10 +28122,16 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
               Math.pow(r - pickedColor.r, 2) + Math.pow(g - pickedColor.g, 2) + Math.pow(b - pickedColor.b, 2)
             );
             const normalizedTolerance = tolerance / 100 * 442;
+            const feather = 5;
+            const lowerBound = Math.max(0, normalizedTolerance - feather);
             if (diff <= normalizedTolerance) {
-              data[i] = targetRgb.r;
-              data[i + 1] = targetRgb.g;
-              data[i + 2] = targetRgb.b;
+              let alpha = 1;
+              if (diff > lowerBound) {
+                alpha = 1 - (diff - lowerBound) / (normalizedTolerance - lowerBound);
+              }
+              data[i] = targetRgb.r * alpha + data[i] * (1 - alpha);
+              data[i + 1] = targetRgb.g * alpha + data[i + 1] * (1 - alpha);
+              data[i + 2] = targetRgb.b * alpha + data[i + 2] * (1 - alpha);
             }
           }
           tempCtx.putImageData(imageData, 0, 0);

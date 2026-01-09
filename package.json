@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
+    "@imgly/background-removal-node": "^1.4.5",
     "jszip": "^3.10.1",
     "lucide": "^0.562.0",
     "png-to-ico": "^3.0.1",

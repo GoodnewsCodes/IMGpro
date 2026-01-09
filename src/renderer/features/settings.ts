@@ -67,6 +67,36 @@ export function initSettings() {
     applyTheme(newSettings.theme);
     alert("Settings saved successfully!");
   });
+
+  // remove.bg API Key Management
+  const removeBgKeyInput = document.getElementById(
+    "remove-bg-key-input"
+  ) as HTMLInputElement;
+  const saveApiKeyBtn = document.getElementById("save-api-key-btn");
+
+  if (removeBgKeyInput && saveApiKeyBtn) {
+    // Load existing key
+    window.electronAPI.getRemoveBgKey().then((key: string | null) => {
+      if (key) {
+        removeBgKeyInput.value = key;
+      }
+    });
+
+    saveApiKeyBtn.addEventListener("click", async () => {
+      const key = removeBgKeyInput.value.trim();
+      if (!key) {
+        alert("Please enter an API key.");
+        return;
+      }
+
+      const result = await window.electronAPI.setRemoveBgKey(key);
+      if (result.success) {
+        alert("API key saved securely!");
+      } else {
+        alert("Failed to save API key: " + result.error);
+      }
+    });
+  }
 }
 
 function applyTheme(theme: "dark" | "light") {

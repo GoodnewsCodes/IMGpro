@@ -17,7 +17,7 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <button id="sidebar-toggle" class="icon-btn">
-            <div class="logo-icon"><i data-lucide="image"></i></div>
+            <img src="../../build/icon.png" alt="IMG" class="logo-icon" />
           </button>
         </div>
         <nav>
@@ -152,6 +152,9 @@
                 </button>
                 <button id="download-btn" class="btn secondary hidden">
                   Download Result
+                </button>
+                <button id="remove-bg-api-btn" class="btn secondary hidden">
+                  Try remove.bg (API)
                 </button>
                 <button id="reset-btn" class="btn ghost">Reset</button>
               </div>
@@ -779,6 +782,28 @@
                 value="100"
                 class="slider"
               />
+            </div>
+            <div class="divider"></div>
+            <div class="setting-group">
+              <label for="remove-bg-key-input">remove.bg API Key</label>
+              <div class="setting-row" style="gap: 0.5rem">
+                <input
+                  type="password"
+                  id="remove-bg-key-input"
+                  class="text-input"
+                  placeholder="Enter your API key"
+                  style="flex: 1"
+                />
+                <button id="save-api-key-btn" class="btn secondary">
+                  Save Key
+                </button>
+              </div>
+              <p class="upload-hint">
+                Get your API key at
+                <a href="https://www.remove.bg/api" target="_blank"
+                  >remove.bg/api</a
+                >. Your key is stored securely.
+              </p>
             </div>
             <div class="actions" style="margin-top: 2rem">
               <button id="save-settings-btn" class="btn primary">

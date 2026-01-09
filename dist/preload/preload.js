@@ -10,4 +10,7 @@ electron_1.contextBridge.exposeInMainWorld("electronAPI", {
     manipulateImage: (data) => electron_1.ipcRenderer.invoke("manipulate-image", data),
     mirrorImage: (data) => electron_1.ipcRenderer.invoke("mirror-image", data),
     generateIco: (buffers) => electron_1.ipcRenderer.invoke("generate-ico", buffers),
+    getRemoveBgKey: () => electron_1.ipcRenderer.invoke("get-remove-bg-key"),
+    setRemoveBgKey: (key) => electron_1.ipcRenderer.invoke("set-remove-bg-key", key),
+    removeBgApi: (buffer) => electron_1.ipcRenderer.invoke("remove-bg-api", buffer),
 });

@@ -40,6 +40,13 @@ declare global {
         filePath: string;
         buffer: Uint8Array;
       }) => Promise<{ success: boolean; error?: string }>;
+      getRemoveBgKey: () => Promise<string | null>;
+      setRemoveBgKey: (
+        key: string
+      ) => Promise<{ success: boolean; error?: string }>;
+      removeBgApi: (
+        buffer: Uint8Array
+      ) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
     };
   }
 }

@@ -53,6 +53,30 @@ To create a distributable executable:
 pnpm run dist
 ```
 
+```cmd
+pnpm run dist:win
+```
+
+- Builds for Windows.
+
+```cmd
+pnpm run dist:mac
+```
+
+- Builds for macOS.
+
+```cmd
+pnpm run dist:linux
+```
+
+- Builds for Linux.
+
+```cmd
+pnpm run dist:all
+```
+
+- Builds for Windows, macOS, and Linux simultaneously.
+
 This will:
 
 - Build the application
