@@ -74,8 +74,9 @@ function initBgRemoval() {
             processBtn.disabled = true;
             loadingText.textContent = "Removing background...";
             const result = await (0, background_removal_1.removeBackground)(selectedFile, {
-                progress: (args, progress) => {
-                    loadingText.textContent = `Processing: ${Math.round(progress * 100)}%`;
+                progress: (key, current, total) => {
+                    const percent = total ? Math.round((current / total) * 100) : 0;
+                    loadingText.textContent = `Processing: ${percent}%`;
                 },
             });
             processedBlob = result;
