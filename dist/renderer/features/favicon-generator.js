@@ -16,6 +16,7 @@ function initFaviconGenerator() {
     const htmlContainer = document.getElementById("favicon-html-container");
     const htmlCode = document.getElementById("favicon-html-code");
     const copyHtmlBtn = document.getElementById("favicon-copy-html-btn");
+    const shapeSelect = document.getElementById("favicon-shape");
     if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
         return;
     const FAVICON_CONFIG = [
@@ -37,13 +38,27 @@ function initFaviconGenerator() {
             handleFile(files[0]);
         }
     });
+    // Handle shape change
+    shapeSelect?.addEventListener("change", () => {
+        if (currentFile) {
+            generateFavicons(currentFile);
+        }
+    });
     // Handle drag and drop
+    dropZone.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+    });
     dropZone.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropZone.classList.add("drag-over");
     });
-    dropZone.addEventListener("dragleave", () => {
-        dropZone.classList.remove("drag-over");
+    dropZone.addEventListener("dragleave", (e) => {
+        // Only remove drag-over class if we're actually leaving the drop zone
+        const relatedTarget = e.relatedTarget;
+        if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+            dropZone.classList.remove("drag-over");
+        }
     });
     dropZone.addEventListener("drop", (e) => {
         e.preventDefault();
@@ -75,6 +90,7 @@ function initFaviconGenerator() {
         htmlContainer?.classList.add("hidden");
         const arrayBuffer = await file.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
+        const mask = (shapeSelect?.value || "square");
         // 1. Generate PNGs
         for (const config of FAVICON_CONFIG) {
             const item = createGridItem(config.name, `${config.size}x${config.size}`);
@@ -86,6 +102,7 @@ function initFaviconGenerator() {
                     height: config.size,
                     fit: "contain",
                     format: "png",
+                    mask,
                 });
                 if (result.success && result.buffer) {
                     const blob = new Blob([result.buffer], { type: config.type });
@@ -109,6 +126,7 @@ function initFaviconGenerator() {
                     height: size,
                     fit: "contain",
                     format: "png",
+                    mask,
                 });
                 if (res.success && res.buffer) {
                     icoBuffers.push(new Uint8Array(res.buffer));

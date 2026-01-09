@@ -47,13 +47,22 @@ export function initImageResizing() {
   // Upload Logic
   dropZone?.addEventListener("click", () => fileInput.click());
 
+  dropZone?.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+
   dropZone?.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("drag-over");
   });
 
-  dropZone?.addEventListener("dragleave", () => {
-    dropZone.classList.remove("drag-over");
+  dropZone?.addEventListener("dragleave", (e) => {
+    // Only remove drag-over class if we're actually leaving the drop zone
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+      dropZone.classList.remove("drag-over");
+    }
   });
 
   dropZone?.addEventListener("drop", (e) => {

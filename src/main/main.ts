@@ -25,7 +25,7 @@ function createWindow() {
   });
 
   // Remove the menu bar
-  mainWindow.setMenu(null);
+  // mainWindow.setMenu(null);
 
   // Set headers for cross-origin isolation (required for SharedArrayBuffer)
   mainWindow.webContents.session.webRequest.onHeadersReceived(
@@ -143,6 +143,7 @@ ipcMain.handle(
       fit = "cover",
       format,
       quality = 80,
+      mask,
     }: {
       inputPath?: string;
       buffer?: Uint8Array;
@@ -151,6 +152,7 @@ ipcMain.handle(
       fit?: keyof sharp.FitEnum;
       format?: string;
       quality?: number;
+      mask?: "square" | "rounded" | "circle";
     }
   ) => {
     try {
@@ -161,7 +163,33 @@ ipcMain.handle(
           width,
           height,
           fit,
+          background: { r: 0, g: 0, b: 0, alpha: 0 }, // Ensure transparent background for fit
         });
+      }
+
+      if (mask && mask !== "square" && width && height) {
+        const w = width;
+        const h = height;
+        let maskSvg = "";
+
+        if (mask === "circle") {
+          const r = Math.min(w, h) / 2;
+          maskSvg = `<svg width="${w}" height="${h}"><circle cx="${
+            w / 2
+          }" cy="${h / 2}" r="${r}" /></svg>`;
+        } else if (mask === "rounded") {
+          const rx = Math.min(w, h) * 0.2; // 20% radius
+          maskSvg = `<svg width="${w}" height="${h}"><rect x="0" y="0" width="${w}" height="${h}" rx="${rx}" ry="${rx}" /></svg>`;
+        }
+
+        if (maskSvg) {
+          pipeline = pipeline.composite([
+            {
+              input: Buffer.from(maskSvg),
+              blend: "dest-in",
+            },
+          ]);
+        }
       }
 
       if (format) {
@@ -207,12 +235,14 @@ ipcMain.handle(
       rotate,
       flip,
       flop,
+      round,
     }: {
       buffer: Uint8Array;
       crop?: { left: number; top: number; width: number; height: number };
       rotate?: number;
       flip?: boolean;
       flop?: boolean;
+      round?: boolean;
     }
   ) => {
     try {
@@ -239,108 +269,33 @@ ipcMain.handle(
         });
       }
 
-      const outputBuffer = await pipeline.toBuffer();
-      return { success: true, buffer: outputBuffer };
-    } catch (error: any) {
-      console.error("Manipulation error:", error);
-      return { success: false, error: error.message };
-    }
-  }
-);
+      if (round) {
+        // Get the current metadata to know dimensions
+        const metadata = await pipeline.metadata();
+        const width = metadata.width || 0;
+        const height = metadata.height || 0;
+        const radius = Math.min(width, height) / 2;
 
-ipcMain.handle(
-  "mirror-image",
-  async (
-    _event: IpcMainInvokeEvent,
-    {
-      buffer,
-      type,
-    }: {
-      buffer: Uint8Array;
-      type:
-        | "left-to-right"
-        | "right-to-left"
-        | "top-to-bottom"
-        | "bottom-to-top";
-    }
-  ) => {
-    try {
-      const original = sharp(Buffer.from(buffer));
-      const metadata = await original.metadata();
-      const width = metadata.width!;
-      const height = metadata.height!;
+        const circleSvg = Buffer.from(
+          `<svg width="${width}" height="${height}"><circle cx="${
+            width / 2
+          }" cy="${height / 2}" r="${radius}" /></svg>`
+        );
 
-      let pipeline;
-
-      if (type === "left-to-right") {
-        const halfWidth = Math.floor(width / 2);
-        const leftHalf = await original
-          .clone()
-          .extract({ left: 0, top: 0, width: halfWidth, height })
-          .toBuffer();
-        pipeline = sharp(leftHalf)
-          .flop()
-          .extend({
-            left: halfWidth,
-            background: { r: 0, g: 0, b: 0, alpha: 0 },
-          })
-          .composite([{ input: leftHalf, left: 0, top: 0 }]);
-      } else if (type === "right-to-left") {
-        const halfWidth = Math.floor(width / 2);
-        const rightHalf = await original
-          .clone()
-          .extract({
-            left: width - halfWidth,
-            top: 0,
-            width: halfWidth,
-            height,
-          })
-          .toBuffer();
-        pipeline = sharp(rightHalf)
-          .flop()
-          .extend({
-            right: halfWidth,
-            background: { r: 0, g: 0, b: 0, alpha: 0 },
-          })
-          .composite([{ input: rightHalf, left: halfWidth, top: 0 }]);
-      } else if (type === "top-to-bottom") {
-        const halfHeight = Math.floor(height / 2);
-        const topHalf = await original
-          .clone()
-          .extract({ left: 0, top: 0, width, height: halfHeight })
-          .toBuffer();
-        pipeline = sharp(topHalf)
-          .flip()
-          .extend({
-            top: halfHeight,
-            background: { r: 0, g: 0, b: 0, alpha: 0 },
-          })
-          .composite([{ input: topHalf, left: 0, top: 0 }]);
-      } else {
-        // bottom-to-top
-        const halfHeight = Math.floor(height / 2);
-        const bottomHalf = await original
-          .clone()
-          .extract({
-            left: 0,
-            top: height - halfHeight,
-            width,
-            height: halfHeight,
-          })
-          .toBuffer();
-        pipeline = sharp(bottomHalf)
-          .flip()
-          .extend({
-            bottom: halfHeight,
-            background: { r: 0, g: 0, b: 0, alpha: 0 },
-          })
-          .composite([{ input: bottomHalf, left: 0, top: halfHeight }]);
+        pipeline = pipeline.composite([
+          {
+            input: circleSvg,
+            blend: "dest-in",
+          },
+        ]);
+        // Force PNG to support transparency
+        pipeline = pipeline.png();
       }
 
       const outputBuffer = await pipeline.toBuffer();
       return { success: true, buffer: outputBuffer };
     } catch (error: any) {
-      console.error("Mirror error:", error);
+      console.error("Manipulation error:", error);
       return { success: false, error: error.message };
     }
   }

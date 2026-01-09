@@ -20,17 +20,24 @@ function initOptimization() {
     let resultBuffer = null;
     // Drag and drop handlers
     dropZone?.addEventListener("click", () => fileInput.click());
+    dropZone?.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+    });
     dropZone?.addEventListener("dragover", (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = "var(--primary)";
+        dropZone.classList.add("drag-over");
     });
     dropZone?.addEventListener("dragleave", (e) => {
-        e.preventDefault();
-        dropZone.style.borderColor = "var(--border-color)";
+        // Only remove drag-over class if we're actually leaving the drop zone
+        const relatedTarget = e.relatedTarget;
+        if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+            dropZone.classList.remove("drag-over");
+        }
     });
     dropZone?.addEventListener("drop", (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = "var(--border-color)";
+        dropZone.classList.remove("drag-over");
         if (e.dataTransfer?.files.length) {
             handleFile(e.dataTransfer.files[0]);
         }

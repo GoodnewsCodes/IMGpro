@@ -18,9 +18,9 @@ function initImageManipulation() {
     const applyEditBtn = document.getElementById("apply-edit-btn");
     const editDownloadBtn = document.getElementById("edit-download-btn");
     const editResetBtn = document.getElementById("edit-reset-btn");
-    // Mirror Controls (now in Edit Section)
-    const mirrorTypeSelect = document.getElementById("mirror-type");
-    const applyMirrorBtn = document.getElementById("apply-mirror-btn");
+    // Crop Controls
+    const cropAspectRatioSelect = document.getElementById("crop-aspect-ratio");
+    const cropShapeSelect = document.getElementById("crop-shape");
     // Tab Logic
     const editTabs = document.querySelectorAll(".edit-tab");
     const editContents = document.querySelectorAll(".edit-tab-content");
@@ -53,13 +53,27 @@ function initImageManipulation() {
     let rotation = 0;
     let flipH = false;
     let flipV = false;
+    let cropAspectRatio = "free"; // 'free' or '1:1'
+    let cropShape = "rect"; // 'rect' or 'round'
+    let isDraggingCrop = false;
+    let dragOffset = { x: 0, y: 0 };
     // --- Edit Section Logic ---
     editDropZone?.addEventListener("click", () => editFileInput.click());
+    editDropZone?.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        editDropZone.classList.add("drag-over");
+    });
     editDropZone?.addEventListener("dragover", (e) => {
         e.preventDefault();
         editDropZone.classList.add("drag-over");
     });
-    editDropZone?.addEventListener("dragleave", () => editDropZone.classList.remove("drag-over"));
+    editDropZone?.addEventListener("dragleave", (e) => {
+        // Only remove drag-over class if we're actually leaving the drop zone
+        const relatedTarget = e.relatedTarget;
+        if (!relatedTarget || !editDropZone.contains(relatedTarget)) {
+            editDropZone.classList.remove("drag-over");
+        }
+    });
     editDropZone?.addEventListener("drop", (e) => {
         e.preventDefault();
         editDropZone.classList.remove("drag-over");
@@ -96,6 +110,7 @@ function initImageManipulation() {
         isCropping = false;
         editResultWrapper?.classList.add("hidden");
         editDownloadBtn.classList.add("hidden");
+        // Reset controls if needed, but maybe keep user preference
     }
     function renderEditCanvas() {
         if (!originalImage || !editCanvas)
@@ -129,20 +144,33 @@ function initImageManipulation() {
         ctx.restore();
         // Draw crop rectangle if exists
         if (cropRect.width > 0 && cropRect.height > 0) {
-            ctx.strokeStyle = "var(--accent)";
+            ctx.strokeStyle = "var(--primary)";
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
-            ctx.strokeRect(cropRect.left, cropRect.top, cropRect.width, cropRect.height);
+            if (cropShape === "round") {
+                ctx.beginPath();
+                ctx.ellipse(cropRect.left + cropRect.width / 2, cropRect.top + cropRect.height / 2, cropRect.width / 2, cropRect.height / 2, 0, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+            else {
+                ctx.strokeRect(cropRect.left, cropRect.top, cropRect.width, cropRect.height);
+            }
             // Overlay
-            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-            // Top
-            ctx.fillRect(0, 0, editCanvas.width, cropRect.top);
-            // Bottom
-            ctx.fillRect(0, cropRect.top + cropRect.height, editCanvas.width, editCanvas.height - (cropRect.top + cropRect.height));
-            // Left
-            ctx.fillRect(0, cropRect.top, cropRect.left, cropRect.height);
-            // Right
-            ctx.fillRect(cropRect.left + cropRect.width, cropRect.top, editCanvas.width - (cropRect.left + cropRect.width), cropRect.height);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            // We need to draw the overlay around the selection.
+            // Easiest way is to draw full semi-transparent rect and clear the selection part?
+            // But clearing with 'destination-out' might clear the image too if not careful with layers.
+            // Better: Path based clipping.
+            ctx.beginPath();
+            ctx.rect(0, 0, editCanvas.width, editCanvas.height);
+            if (cropShape === "round") {
+                ctx.arc(cropRect.left + cropRect.width / 2, cropRect.top + cropRect.height / 2, cropRect.width / 2, 0, 2 * Math.PI, true);
+            }
+            else {
+                ctx.rect(cropRect.left, cropRect.top, cropRect.width, cropRect.height);
+            }
+            // Use even-odd rule to create hole
+            ctx.fill("evenodd");
         }
     }
     // Rotation & Flip
@@ -168,31 +196,101 @@ function initImageManipulation() {
         cropRect = { left: 0, top: 0, width: 0, height: 0 };
         renderEditCanvas();
     });
+    // Crop Controls Listeners
+    cropAspectRatioSelect?.addEventListener("change", () => {
+        cropAspectRatio = cropAspectRatioSelect.value;
+        // If we switch to 1:1, we might want to adjust current crop if it exists
+        if (cropAspectRatio === "1:1" && cropRect.width > 0) {
+            const size = Math.min(cropRect.width, cropRect.height);
+            cropRect.width = size;
+            cropRect.height = size;
+            renderEditCanvas();
+        }
+    });
+    cropShapeSelect?.addEventListener("change", () => {
+        cropShape = cropShapeSelect.value;
+        if (cropShape === "round") {
+            // Round implies 1:1 usually, let's force it or at least set the dropdown
+            cropAspectRatioSelect.value = "1:1";
+            cropAspectRatio = "1:1";
+            if (cropRect.width > 0) {
+                const size = Math.min(cropRect.width, cropRect.height);
+                cropRect.width = size;
+                cropRect.height = size;
+            }
+        }
+        renderEditCanvas();
+    });
     // Mouse events for cropping
     editCanvas.addEventListener("mousedown", (e) => {
         if (!originalImage)
             return;
         const rect = editCanvas.getBoundingClientRect();
-        cropStart.x = e.clientX - rect.left;
-        cropStart.y = e.clientY - rect.top;
-        isCropping = true;
+        const scaleX = editCanvas.width / rect.width;
+        const scaleY = editCanvas.height / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+        // Check if inside existing crop rect
+        if (cropRect.width > 0 &&
+            cropRect.height > 0 &&
+            mouseX >= cropRect.left &&
+            mouseX <= cropRect.left + cropRect.width &&
+            mouseY >= cropRect.top &&
+            mouseY <= cropRect.top + cropRect.height) {
+            isDraggingCrop = true;
+            dragOffset.x = mouseX - cropRect.left;
+            dragOffset.y = mouseY - cropRect.top;
+            editCanvas.style.cursor = "move";
+        }
+        else {
+            cropStart.x = mouseX;
+            cropStart.y = mouseY;
+            isCropping = true;
+            editCanvas.style.cursor = "crosshair";
+        }
     });
     window.addEventListener("mousemove", (e) => {
-        if (!isCropping || !editCanvas)
+        if ((!isCropping && !isDraggingCrop) || !editCanvas)
             return;
         const rect = editCanvas.getBoundingClientRect();
-        cropEnd.x = Math.max(0, Math.min(e.clientX - rect.left, editCanvas.width));
-        cropEnd.y = Math.max(0, Math.min(e.clientY - rect.top, editCanvas.height));
-        cropRect = {
-            left: Math.min(cropStart.x, cropEnd.x),
-            top: Math.min(cropStart.y, cropEnd.y),
-            width: Math.abs(cropStart.x - cropEnd.x),
-            height: Math.abs(cropStart.y - cropEnd.y),
-        };
-        renderEditCanvas();
+        const scaleX = editCanvas.width / rect.width;
+        const scaleY = editCanvas.height / rect.height;
+        // Calculate current mouse position relative to canvas (internal coordinates)
+        let currentX = Math.max(0, Math.min((e.clientX - rect.left) * scaleX, editCanvas.width));
+        let currentY = Math.max(0, Math.min((e.clientY - rect.top) * scaleY, editCanvas.height));
+        if (isDraggingCrop) {
+            let newLeft = currentX - dragOffset.x;
+            let newTop = currentY - dragOffset.y;
+            // Clamp to canvas bounds
+            newLeft = Math.max(0, Math.min(newLeft, editCanvas.width - cropRect.width));
+            newTop = Math.max(0, Math.min(newTop, editCanvas.height - cropRect.height));
+            cropRect.left = newLeft;
+            cropRect.top = newTop;
+            renderEditCanvas();
+            return;
+        }
+        if (isCropping) {
+            let width = currentX - cropStart.x;
+            let height = currentY - cropStart.y;
+            if (cropAspectRatio === "1:1") {
+                const size = Math.min(Math.abs(width), Math.abs(height));
+                width = width < 0 ? -size : size;
+                height = height < 0 ? -size : size;
+            }
+            cropRect = {
+                left: width < 0 ? cropStart.x + width : cropStart.x,
+                top: height < 0 ? cropStart.y + height : cropStart.y,
+                width: Math.abs(width),
+                height: Math.abs(height),
+            };
+            renderEditCanvas();
+        }
     });
     window.addEventListener("mouseup", () => {
         isCropping = false;
+        isDraggingCrop = false;
+        if (editCanvas)
+            editCanvas.style.cursor = "default";
     });
     applyEditBtn.addEventListener("click", async () => {
         if (!currentFile || !originalImage)
@@ -223,11 +321,12 @@ function initImageManipulation() {
                 flip: flipV,
                 flop: flipH,
                 crop,
+                round: cropShape === "round" && !!crop, // Only apply round if cropping
             });
             if (result.success && result.buffer) {
                 editBuffer = result.buffer;
                 const blob = new Blob([result.buffer], {
-                    type: currentFile.type,
+                    type: "image/png", // Force PNG for transparency if round
                 });
                 editResultPreview.src = URL.createObjectURL(blob);
                 editDownloadBtn.classList.remove("hidden");
@@ -245,43 +344,15 @@ function initImageManipulation() {
             applyEditBtn.disabled = false;
         }
     });
-    applyMirrorBtn.addEventListener("click", async () => {
-        if (!currentFile)
-            return;
-        editLoadingOverlay?.classList.remove("hidden");
-        editResultWrapper?.classList.remove("hidden");
-        applyMirrorBtn.disabled = true;
-        try {
-            const arrayBuffer = await currentFile.arrayBuffer();
-            const buffer = new Uint8Array(arrayBuffer);
-            const type = mirrorTypeSelect.value;
-            const result = await window.electronAPI.mirrorImage({ buffer, type });
-            if (result.success && result.buffer) {
-                editBuffer = result.buffer;
-                const blob = new Blob([result.buffer], {
-                    type: currentFile.type,
-                });
-                editResultPreview.src = URL.createObjectURL(blob);
-                editDownloadBtn.classList.remove("hidden");
-            }
-            else {
-                alert("Mirror failed: " + result.error);
-            }
-        }
-        catch (e) {
-            console.error(e);
-            alert("An error occurred.");
-        }
-        finally {
-            editLoadingOverlay?.classList.add("hidden");
-            applyMirrorBtn.disabled = false;
-        }
-    });
     editDownloadBtn.addEventListener("click", async () => {
         if (!editBuffer || !currentFile)
             return;
-        const ext = currentFile.name.split(".").pop() || "png";
-        const savePath = await window.electronAPI.selectSavePath(`edited_${currentFile.name}`);
+        // If round crop, we should suggest PNG
+        const isRound = cropShape === "round" && cropRect.width > 0;
+        const defaultName = isRound
+            ? `edited_${currentFile.name.split(".")[0]}.png`
+            : `edited_${currentFile.name}`;
+        const savePath = await window.electronAPI.selectSavePath(defaultName);
         if (savePath) {
             const result = await window.electronAPI.saveFile({
                 filePath: savePath,

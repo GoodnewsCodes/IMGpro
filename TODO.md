@@ -1,11 +1,11 @@
 1. [x] background removal
 
 2. [x] image color picker
-3. [ ] image optimization
+3. [x] image optimization
 4. [x] image conversion
 5. [x] change specific color in image
 6. [x] image resizing
-7. [] image cropping, image rotation, image flip & image mirror
+7. [x] image cropping, image rotation & image flip
 8. [x] favicon generator
 
 ## todo:

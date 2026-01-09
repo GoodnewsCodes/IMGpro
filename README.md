@@ -14,9 +14,9 @@ IMGpro is a feature-rich image processing tool that allows users to perform vari
 - **Image Conversion** - Convert between multiple formats (JPEG, PNG, WebP, TIFF, GIF, AVIF, SVG)
 - **Image Resizing** - Resize images with various fit options
 - **Image Manipulation**
-  - Crop images
+  - Advanced Cropping (Free, 1:1, Round, Repositionable)
   - Rotate images
-  - Flip & Mirror effects
+  - Flip effects
 - **Color Tools**
   - Color picker
   - Replace specific colors in images

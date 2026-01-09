@@ -2,24 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://static.img.ly https://staticimgly.com; worker-src 'self' blob:;"
-    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fin-Gen Desktop</title>
+
+    <title>IMG Pro Desktop</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Favicon links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
   <body>
     <div class="app-container">
       <aside class="sidebar">
         <div class="sidebar-header">
-          <div class="logo">
-            <div class="logo-icon"><i data-lucide="image"></i></div>
-            <span class="logo-text">IMG Pro</span>
-          </div>
           <button id="sidebar-toggle" class="icon-btn">
-            <i data-lucide="menu"></i>
+            <div class="logo-icon"><i data-lucide="image"></i></div>
           </button>
         </div>
         <nav>
@@ -66,7 +64,7 @@
         <!-- Home Section -->
         <section id="home-section" class="tab-content">
           <header>
-            <h1>IMGPro Home</h1>
+            <span class="logo-text">IMG Pro</span>
           </header>
           <div class="welcome-card">
             <p>Select a tool from the sidebar to get started.</p>
@@ -477,7 +475,6 @@
                 </button>
                 <button class="edit-tab" data-edit-tab="rotate">Rotate</button>
                 <button class="edit-tab" data-edit-tab="flip">Flip</button>
-                <button class="edit-tab" data-edit-tab="mirror">Mirror</button>
               </div>
               <div class="preview-grid">
                 <div class="preview-item">
@@ -490,7 +487,20 @@
                   <div class="settings-panel">
                     <div id="edit-content-crop" class="edit-tab-content">
                       <div class="setting-group">
-                        <label>Crop</label>
+                        <label>Crop Settings</label>
+                        <div
+                          class="setting-row"
+                          style="gap: 0.5rem; margin-bottom: 0.5rem"
+                        >
+                          <select id="crop-aspect-ratio" class="select-input">
+                            <option value="free">Free</option>
+                            <option value="1:1">1:1 (Square)</option>
+                          </select>
+                          <select id="crop-shape" class="select-input">
+                            <option value="rect">Rectangle</option>
+                            <option value="round">Round</option>
+                          </select>
+                        </div>
                         <p style="font-size: 0.8rem; margin-bottom: 0.5rem">
                           Drag on the image to select crop area.
                         </p>
@@ -535,30 +545,6 @@
                           </button>
                           <button id="flip-v-btn" class="btn ghost">
                             Flip Vertical
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      id="edit-content-mirror"
-                      class="edit-tab-content hidden"
-                    >
-                      <div class="setting-group">
-                        <label for="mirror-type">Mirror Effect</label>
-                        <div class="setting-row" style="gap: 0.5rem">
-                          <select id="mirror-type" class="select-input">
-                            <option value="left-to-right">Left to Right</option>
-                            <option value="right-to-left">Right to Left</option>
-                            <option value="top-to-bottom">Top to Bottom</option>
-                            <option value="bottom-to-top">Bottom to Top</option>
-                          </select>
-                          <button
-                            id="apply-mirror-btn"
-                            class="btn primary"
-                            style="padding: 0.5rem 1rem"
-                          >
-                            Apply Mirror
                           </button>
                         </div>
                       </div>
@@ -615,6 +601,29 @@
                 <div class="favicon-source">
                   <h3>Original Image</h3>
                   <img id="favicon-original-preview" src="" alt="Original" />
+                  <div
+                    class="setting-group"
+                    style="margin-top: 1rem; margin-bottom: 1rem"
+                  >
+                    <label
+                      for="favicon-shape"
+                      style="
+                        display: block;
+                        margin-bottom: 0.5rem;
+                        color: var(--text-secondary);
+                      "
+                      >Shape</label
+                    >
+                    <select
+                      id="favicon-shape"
+                      class="select-input"
+                      style="width: 100%"
+                    >
+                      <option value="square">Square</option>
+                      <option value="rounded">Rounded Corners</option>
+                      <option value="circle">Circle</option>
+                    </select>
+                  </div>
                   <div class="actions">
                     <button id="favicon-reset-btn" class="btn ghost">
                       Reset

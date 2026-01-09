@@ -18,6 +18,7 @@ declare global {
         fit?: string;
         format?: string;
         quality?: number;
+        mask?: "square" | "rounded" | "circle";
       }) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
       manipulateImage: (data: {
         buffer: Uint8Array;
@@ -25,6 +26,7 @@ declare global {
         rotate?: number;
         flip?: boolean;
         flop?: boolean;
+        round?: boolean;
       }) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
       mirrorImage: (data: {
         buffer: Uint8Array;

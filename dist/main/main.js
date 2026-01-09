@@ -52,10 +52,10 @@ function createWindow() {
         },
         show: false,
         backgroundColor: "#0f172a", // Slate 900
-        autoHideMenuBar: true,
+        autoHideMenuBar: false,
     });
     // Remove the menu bar
-    mainWindow.setMenu(null);
+    // mainWindow.setMenu(null);
     // Set headers for cross-origin isolation (required for SharedArrayBuffer)
     mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
         callback({
@@ -134,7 +134,7 @@ electron_1.ipcMain.handle("convert-image", async (_event, { inputPath, buffer, f
         return { success: false, error: error.message };
     }
 });
-electron_1.ipcMain.handle("resize-image", async (_event, { inputPath, buffer, width, height, fit = "cover", format, quality = 80, }) => {
+electron_1.ipcMain.handle("resize-image", async (_event, { inputPath, buffer, width, height, fit = "cover", format, quality = 80, mask, }) => {
     try {
         let pipeline = inputPath ? (0, sharp_1.default)(inputPath) : (0, sharp_1.default)(Buffer.from(buffer));
         if (width || height) {
@@ -142,7 +142,29 @@ electron_1.ipcMain.handle("resize-image", async (_event, { inputPath, buffer, wi
                 width,
                 height,
                 fit,
+                background: { r: 0, g: 0, b: 0, alpha: 0 }, // Ensure transparent background for fit
             });
+        }
+        if (mask && mask !== "square" && width && height) {
+            const w = width;
+            const h = height;
+            let maskSvg = "";
+            if (mask === "circle") {
+                const r = Math.min(w, h) / 2;
+                maskSvg = `<svg width="${w}" height="${h}"><circle cx="${w / 2}" cy="${h / 2}" r="${r}" /></svg>`;
+            }
+            else if (mask === "rounded") {
+                const rx = Math.min(w, h) * 0.2; // 20% radius
+                maskSvg = `<svg width="${w}" height="${h}"><rect x="0" y="0" width="${w}" height="${h}" rx="${rx}" ry="${rx}" /></svg>`;
+            }
+            if (maskSvg) {
+                pipeline = pipeline.composite([
+                    {
+                        input: Buffer.from(maskSvg),
+                        blend: "dest-in",
+                    },
+                ]);
+            }
         }
         if (format) {
             switch (format.toLowerCase()) {
@@ -175,7 +197,7 @@ electron_1.ipcMain.handle("resize-image", async (_event, { inputPath, buffer, wi
         return { success: false, error: error.message };
     }
 });
-electron_1.ipcMain.handle("manipulate-image", async (_event, { buffer, crop, rotate, flip, flop, }) => {
+electron_1.ipcMain.handle("manipulate-image", async (_event, { buffer, crop, rotate, flip, flop, round, }) => {
     try {
         let pipeline = (0, sharp_1.default)(Buffer.from(buffer));
         if (rotate) {
@@ -195,93 +217,27 @@ electron_1.ipcMain.handle("manipulate-image", async (_event, { buffer, crop, rot
                 height: Math.round(crop.height),
             });
         }
+        if (round) {
+            // Get the current metadata to know dimensions
+            const metadata = await pipeline.metadata();
+            const width = metadata.width || 0;
+            const height = metadata.height || 0;
+            const radius = Math.min(width, height) / 2;
+            const circleSvg = Buffer.from(`<svg width="${width}" height="${height}"><circle cx="${width / 2}" cy="${height / 2}" r="${radius}" /></svg>`);
+            pipeline = pipeline.composite([
+                {
+                    input: circleSvg,
+                    blend: "dest-in",
+                },
+            ]);
+            // Force PNG to support transparency
+            pipeline = pipeline.png();
+        }
         const outputBuffer = await pipeline.toBuffer();
         return { success: true, buffer: outputBuffer };
     }
     catch (error) {
         console.error("Manipulation error:", error);
-        return { success: false, error: error.message };
-    }
-});
-electron_1.ipcMain.handle("mirror-image", async (_event, { buffer, type, }) => {
-    try {
-        const original = (0, sharp_1.default)(Buffer.from(buffer));
-        const metadata = await original.metadata();
-        const width = metadata.width;
-        const height = metadata.height;
-        let pipeline;
-        if (type === "left-to-right") {
-            const halfWidth = Math.floor(width / 2);
-            const leftHalf = await original
-                .clone()
-                .extract({ left: 0, top: 0, width: halfWidth, height })
-                .toBuffer();
-            pipeline = (0, sharp_1.default)(leftHalf)
-                .flop()
-                .extend({
-                left: halfWidth,
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-            })
-                .composite([{ input: leftHalf, left: 0, top: 0 }]);
-        }
-        else if (type === "right-to-left") {
-            const halfWidth = Math.floor(width / 2);
-            const rightHalf = await original
-                .clone()
-                .extract({
-                left: width - halfWidth,
-                top: 0,
-                width: halfWidth,
-                height,
-            })
-                .toBuffer();
-            pipeline = (0, sharp_1.default)(rightHalf)
-                .flop()
-                .extend({
-                right: halfWidth,
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-            })
-                .composite([{ input: rightHalf, left: halfWidth, top: 0 }]);
-        }
-        else if (type === "top-to-bottom") {
-            const halfHeight = Math.floor(height / 2);
-            const topHalf = await original
-                .clone()
-                .extract({ left: 0, top: 0, width, height: halfHeight })
-                .toBuffer();
-            pipeline = (0, sharp_1.default)(topHalf)
-                .flip()
-                .extend({
-                top: halfHeight,
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-            })
-                .composite([{ input: topHalf, left: 0, top: 0 }]);
-        }
-        else {
-            // bottom-to-top
-            const halfHeight = Math.floor(height / 2);
-            const bottomHalf = await original
-                .clone()
-                .extract({
-                left: 0,
-                top: height - halfHeight,
-                width,
-                height: halfHeight,
-            })
-                .toBuffer();
-            pipeline = (0, sharp_1.default)(bottomHalf)
-                .flip()
-                .extend({
-                bottom: halfHeight,
-                background: { r: 0, g: 0, b: 0, alpha: 0 },
-            })
-                .composite([{ input: bottomHalf, left: 0, top: halfHeight }]);
-        }
-        const outputBuffer = await pipeline.toBuffer();
-        return { success: true, buffer: outputBuffer };
-    }
-    catch (error) {
-        console.error("Mirror error:", error);
         return { success: false, error: error.message };
     }
 });

@@ -27,7 +27,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron",
-      "electron-winstaller"
+      "electron-winstaller",
+      "sharp"
     ]
   },
   "dependencies": {

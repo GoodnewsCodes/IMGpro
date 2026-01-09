@@ -17,6 +17,9 @@ export function initFaviconGenerator() {
   const htmlContainer = document.getElementById("favicon-html-container");
   const htmlCode = document.getElementById("favicon-html-code");
   const copyHtmlBtn = document.getElementById("favicon-copy-html-btn");
+  const shapeSelect = document.getElementById(
+    "favicon-shape"
+  ) as HTMLSelectElement;
 
   if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
     return;
@@ -45,14 +48,30 @@ export function initFaviconGenerator() {
     }
   });
 
+  // Handle shape change
+  shapeSelect?.addEventListener("change", () => {
+    if (currentFile) {
+      generateFavicons(currentFile);
+    }
+  });
+
   // Handle drag and drop
+  dropZone.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("drag-over");
   });
 
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("drag-over");
+  dropZone.addEventListener("dragleave", (e) => {
+    // Only remove drag-over class if we're actually leaving the drop zone
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+      dropZone.classList.remove("drag-over");
+    }
   });
 
   dropZone.addEventListener("drop", (e) => {
@@ -89,6 +108,10 @@ export function initFaviconGenerator() {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
+    const mask = (shapeSelect?.value || "square") as
+      | "square"
+      | "rounded"
+      | "circle";
 
     // 1. Generate PNGs
     for (const config of FAVICON_CONFIG) {
@@ -102,6 +125,7 @@ export function initFaviconGenerator() {
           height: config.size,
           fit: "contain",
           format: "png",
+          mask,
         });
 
         if (result.success && result.buffer) {
@@ -127,6 +151,7 @@ export function initFaviconGenerator() {
           height: size,
           fit: "contain",
           format: "png",
+          mask,
         });
         if (res.success && res.buffer) {
           icoBuffers.push(new Uint8Array(res.buffer as any));

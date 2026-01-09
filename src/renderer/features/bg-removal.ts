@@ -48,13 +48,23 @@ export function initBgRemoval() {
   // Handle file selection
   dropZone.addEventListener("click", () => fileInput.click());
 
+  dropZone.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("active");
+  });
+
   dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZone.classList.add("active");
   });
 
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("active");
+  dropZone.addEventListener("dragleave", (e) => {
+    // Only remove active class if we're actually leaving the drop zone
+    // relatedTarget will be null when leaving the window entirely
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+      dropZone.classList.remove("active");
+    }
   });
 
   dropZone.addEventListener("drop", (e) => {
