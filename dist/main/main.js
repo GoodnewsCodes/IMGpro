@@ -41,6 +41,7 @@ const path = __importStar(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
 const fs = __importStar(require("fs"));
 const png_to_ico_1 = __importDefault(require("png-to-ico"));
+const png2icons = __importStar(require("png2icons"));
 function createWindow() {
     const mainWindow = new electron_1.BrowserWindow({
         width: 1200,
@@ -123,6 +124,13 @@ electron_1.ipcMain.handle("convert-image", async (_event, { inputPath, buffer, f
             </svg>
           `;
                 return { success: true, buffer: Buffer.from(svg) };
+            case "icns":
+                // ICNS requires PNG input. We'll convert to PNG first.
+                const pngForIcns = await pipeline.png().toBuffer();
+                const icnsBuffer = png2icons.createICNS(pngForIcns, png2icons.HERMITE, 0);
+                if (!icnsBuffer)
+                    throw new Error("Failed to create ICNS");
+                return { success: true, buffer: icnsBuffer };
             default:
                 throw new Error(`Unsupported format: ${format}`);
         }
@@ -247,7 +255,7 @@ electron_1.ipcMain.handle("select-save-path", async (_event, defaultPath) => {
         filters: [
             {
                 name: "Images",
-                extensions: ["jpg", "png", "webp", "tiff", "gif", "avif"],
+                extensions: ["jpg", "png", "webp", "tiff", "gif", "avif", "icns"],
             },
         ],
     });

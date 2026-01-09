@@ -34,7 +34,8 @@ function initImageConversion() {
     const initialFormat = formatSelect.value;
     if (initialFormat === "png" ||
         initialFormat === "gif" ||
-        initialFormat === "svg") {
+        initialFormat === "svg" ||
+        initialFormat === "icns") {
         qualityGroup?.classList.add("hidden");
     }
     else {
@@ -43,7 +44,10 @@ function initImageConversion() {
     // Handle quality slider visibility
     formatSelect.addEventListener("change", () => {
         const format = formatSelect.value;
-        if (format === "png" || format === "gif" || format === "svg") {
+        if (format === "png" ||
+            format === "gif" ||
+            format === "svg" ||
+            format === "icns") {
             qualityGroup?.classList.add("hidden");
         }
         else {

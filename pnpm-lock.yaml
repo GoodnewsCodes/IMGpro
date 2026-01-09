@@ -23,6 +23,9 @@ importers:
       png-to-ico:
         specifier: ^3.0.1
         version: 3.0.1
+      png2icons:
+        specifier: ^2.0.1
+        version: 2.0.1
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -1660,6 +1663,10 @@ packages:
   png-to-ico@3.0.1:
     resolution: {integrity: sha512-S8BOAoaGd9gT5uaemQ62arIY3Jzco7Uc7LwUTqRyqJDTsKqOAiyfyN4dSdT0D+Zf8XvgztgpRbM5wnQd7EgYwg==}
     engines: {node: '>=20'}
+    hasBin: true
+
+  png2icons@2.0.1:
+    resolution: {integrity: sha512-GDEQJr8OG4e6JMp7mABtXFSEpgJa1CCpbQiAR+EjhkHJHnUL9zPPtbOrjsMD8gUbikgv3j7x404b0YJsV3aVFA==}
     hasBin: true
 
   pngjs@7.0.0:
@@ -3851,6 +3858,8 @@ snapshots:
       '@types/node': 22.19.3
       minimist: 1.2.8
       pngjs: 7.0.0
+
+  png2icons@2.0.1: {}
 
   pngjs@7.0.0: {}
 

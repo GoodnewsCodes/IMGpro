@@ -10,6 +10,7 @@ import * as path from "path";
 import sharp from "sharp";
 import * as fs from "fs";
 import pngToIco from "png-to-ico";
+import * as png2icons from "png2icons";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -22,7 +23,7 @@ function createWindow() {
     },
     show: false,
     backgroundColor: "#0f172a", // Slate 900
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
   });
 
   // Remove the menu bar
@@ -119,6 +120,16 @@ ipcMain.handle(
             </svg>
           `;
           return { success: true, buffer: Buffer.from(svg) };
+        case "icns":
+          // ICNS requires PNG input. We'll convert to PNG first.
+          const pngForIcns = await pipeline.png().toBuffer();
+          const icnsBuffer = png2icons.createICNS(
+            pngForIcns,
+            png2icons.HERMITE,
+            0
+          );
+          if (!icnsBuffer) throw new Error("Failed to create ICNS");
+          return { success: true, buffer: icnsBuffer };
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
@@ -310,7 +321,7 @@ ipcMain.handle(
       filters: [
         {
           name: "Images",
-          extensions: ["jpg", "png", "webp", "tiff", "gif", "avif"],
+          extensions: ["jpg", "png", "webp", "tiff", "gif", "avif", "icns"],
         },
       ],
     });
