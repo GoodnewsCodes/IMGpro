@@ -23,7 +23,7 @@ function createWindow() {
     },
     show: false,
     backgroundColor: "#0f172a", // Slate 900
-    autoHideMenuBar: false,
+    autoHideMenuBar: true,
   });
 
   // Remove the menu bar

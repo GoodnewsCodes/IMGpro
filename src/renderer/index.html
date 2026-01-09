@@ -849,5 +849,83 @@
     </div>
 
     <script src="renderer.js"></script>
+    <!-- Onboarding Overlay -->
+    <div id="onboarding-overlay" class="onboarding-overlay hidden">
+      <div class="onboarding-card">
+        <button id="onboarding-skip" class="onboarding-skip">Skip</button>
+
+        <div class="onboarding-steps">
+          <!-- Step 1: Welcome -->
+          <div class="onboarding-step active" data-step="1">
+            <div class="onboarding-icon-large">
+              <img src="../../build/icon.png" alt="IMGpro Logo" />
+            </div>
+            <h2>Welcome to IMGpro</h2>
+            <p>
+              Your all-in-one desktop companion for professional image
+              processing. Let's take a quick tour of what you can do.
+            </p>
+          </div>
+
+          <!-- Step 2: AI Background Removal -->
+          <div class="onboarding-step" data-step="2">
+            <div class="onboarding-icon-large">
+              <i data-lucide="scissors"></i>
+            </div>
+            <h2>AI Background Removal</h2>
+            <p>
+              Remove backgrounds from any image instantly using our powerful AI.
+              No more tedious manual masking.
+            </p>
+          </div>
+
+          <!-- Step 3: Advanced Tools -->
+          <div class="onboarding-step" data-step="3">
+            <div class="onboarding-icon-large">
+              <i data-lucide="refresh-cw"></i>
+            </div>
+            <h2>Advanced Image Tools</h2>
+            <p>
+              Convert, resize, and manipulate images with precision. Support for
+              JPG, PNG, WebP, AVIF, and even ICNS.
+            </p>
+          </div>
+
+          <!-- Step 4: Favicon & Color Tools -->
+          <div class="onboarding-step" data-step="4">
+            <div class="onboarding-icon-large">
+              <i data-lucide="palette"></i>
+            </div>
+            <h2>Favicon & Color Tools</h2>
+            <p>
+              Generate professional favicons or use our Pick & Replace tool to
+              precisely manage colors in your designs.
+            </p>
+          </div>
+        </div>
+
+        <div class="onboarding-footer">
+          <div class="onboarding-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="onboarding-actions">
+            <button id="onboarding-prev" class="btn ghost hidden">Back</button>
+            <button id="onboarding-next" class="btn primary">Next</button>
+            <button id="onboarding-finish" class="btn primary hidden">
+              Get Started
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../node_modules/lucide/dist/umd/lucide.min.js"></script>
+    <script>
+      // Initial icon render for static elements if needed
+      // lucide.createIcons();
+    </script>
   </body>
 </html>

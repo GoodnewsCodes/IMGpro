@@ -6,6 +6,7 @@ import { initImageManipulation } from "./features/image-manipulation";
 import { initFaviconGenerator } from "./features/favicon-generator";
 import { initOptimization } from "./features/optimization";
 import { initSettings } from "./features/settings";
+import { initOnboarding } from "./features/onboarding";
 import {
   createIcons,
   Palette,
@@ -112,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFaviconGenerator();
   initOptimization();
   initSettings();
+  initOnboarding();
 });
 
 // Global Drag & Drop Visual Feedback
