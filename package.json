@@ -4,7 +4,7 @@
   "description": "Desktop app for manipulating images.",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc && npx esbuild src/renderer/renderer.ts --bundle --outfile=dist/renderer/renderer.js --platform=browser && copy src\\renderer\\index.html dist\\renderer\\index.html /Y && copy src\\renderer\\style.css dist\\renderer\\style.css /Y",
+    "build": "tsc && npx esbuild src/renderer/renderer.ts --bundle --outfile=dist/renderer/renderer.js --platform=browser && shx cp src/renderer/index.html dist/renderer/index.html && shx cp src/renderer/style.css dist/renderer/style.css",
     "start": "npm run build && electron .",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,6 +22,7 @@
     "electron-builder": "^26.0.12",
     "electron-reload": "2.0.0-alpha.1",
     "esbuild": "^0.25.0",
+    "shx": "^0.4.0",
     "typescript": "^5.9.3"
   },
   "pnpm": {
@@ -55,6 +56,21 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Graphics"
     }
   }
 }
