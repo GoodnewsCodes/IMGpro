@@ -9,7 +9,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "electron": ["node_modules/electron/electron.d.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
