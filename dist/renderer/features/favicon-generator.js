@@ -22,9 +22,12 @@ function initFaviconGenerator() {
     const FAVICON_CONFIG = [
         { name: "favicon-16x16.png", size: 16, type: "image/png" },
         { name: "favicon-32x32.png", size: 32, type: "image/png" },
-        { name: "apple-touch-icon.png", size: 180, type: "image/png" },
-        { name: "android-chrome-192x192.png", size: 192, type: "image/png" },
+        { name: "favicon-96x96.png", size: 96, type: "image/png" },
+        { name: "apple-icon-152x152.png", size: 152, type: "image/png" },
+        { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
+        { name: "android-icon-192x192.png", size: 192, type: "image/png" },
         { name: "android-chrome-512x512.png", size: 512, type: "image/png" },
+        { name: "ms-icon-144x144.png", size: 144, type: "image/png" },
     ];
     const ICO_SIZES = [16, 32, 48];
     let currentFile = null;
@@ -146,23 +149,43 @@ function initFaviconGenerator() {
         }
         // 3. Generate Web Manifest
         const manifest = {
-            name: "App Name",
-            short_name: "App",
+            name: "ETHEGEN - AI-Powered Cybersecurity Platform",
+            short_name: "ETHEGEN",
+            description: "Enterprise-grade cybersecurity platform with AI-powered threat detection and security operations",
             icons: [
                 {
-                    src: "/android-chrome-192x192.png",
+                    src: "/favicon-16x16.png",
+                    sizes: "16x16",
+                    type: "image/png",
+                },
+                {
+                    src: "/favicon-32x32.png",
+                    sizes: "32x32",
+                    type: "image/png",
+                },
+                {
+                    src: "/favicon-96x96.png",
+                    sizes: "96x96",
+                    type: "image/png",
+                },
+                {
+                    src: "/android-icon-192x192.png",
                     sizes: "192x192",
                     type: "image/png",
+                    purpose: "any",
                 },
                 {
                     src: "/android-chrome-512x512.png",
                     sizes: "512x512",
                     type: "image/png",
+                    purpose: "any",
                 },
             ],
             theme_color: "#ffffff",
             background_color: "#ffffff",
             display: "standalone",
+            scope: "/",
+            start_url: "/",
         };
         const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
             type: "application/json",
@@ -204,11 +227,22 @@ function initFaviconGenerator() {
     function updateHtmlSnippet() {
         if (!htmlCode)
             return;
-        const snippet = `<!-- Favicon links -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">`;
+        const snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+
+<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
+<meta name="theme-color" content="#ffffff" />`;
         htmlCode.textContent = snippet;
     }
     async function downloadBlob(blob, fileName) {

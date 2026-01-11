@@ -28,6 +28,9 @@ export function initBgRemoval() {
   const removeBgApiBtn = document.getElementById(
     "remove-bg-api-btn"
   ) as HTMLButtonElement;
+  const removeBgApiHint = document.getElementById(
+    "remove-bg-api-hint"
+  ) as HTMLParagraphElement;
 
   let selectedFile: File | null = null;
   let processedBlob: Blob | null = null;
@@ -43,7 +46,8 @@ export function initBgRemoval() {
     !resetBtn ||
     !loadingOverlay ||
     !loadingText ||
-    !removeBgApiBtn
+    !removeBgApiBtn ||
+    !removeBgApiHint
   ) {
     console.error("Background removal elements not found");
     return;
@@ -98,7 +102,9 @@ export function initBgRemoval() {
       dropZone.classList.add("hidden");
       resultPreview.src = "";
       downloadBtn.classList.add("hidden");
-      removeBgApiBtn.classList.add("hidden");
+      // Keep removeBgApiBtn and hint visible as requested
+      removeBgApiBtn.classList.remove("hidden");
+      if (removeBgApiHint) removeBgApiHint.classList.remove("hidden");
     };
     reader.readAsDataURL(file);
   }
@@ -198,5 +204,6 @@ export function initBgRemoval() {
     dropZone.classList.remove("hidden");
     downloadBtn.classList.add("hidden");
     removeBgApiBtn.classList.add("hidden");
+    if (removeBgApiHint) removeBgApiHint.classList.add("hidden");
   });
 }

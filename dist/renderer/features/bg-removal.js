@@ -14,6 +14,7 @@ function initBgRemoval() {
     const loadingOverlay = document.getElementById("loading-overlay");
     const loadingText = document.getElementById("loading-text");
     const removeBgApiBtn = document.getElementById("remove-bg-api-btn");
+    const removeBgApiHint = document.getElementById("remove-bg-api-hint");
     let selectedFile = null;
     let processedBlob = null;
     if (!fileInput ||
@@ -26,7 +27,8 @@ function initBgRemoval() {
         !resetBtn ||
         !loadingOverlay ||
         !loadingText ||
-        !removeBgApiBtn) {
+        !removeBgApiBtn ||
+        !removeBgApiHint) {
         console.error("Background removal elements not found");
         return;
     }
@@ -73,7 +75,10 @@ function initBgRemoval() {
             dropZone.classList.add("hidden");
             resultPreview.src = "";
             downloadBtn.classList.add("hidden");
-            removeBgApiBtn.classList.add("hidden");
+            // Keep removeBgApiBtn and hint visible as requested
+            removeBgApiBtn.classList.remove("hidden");
+            if (removeBgApiHint)
+                removeBgApiHint.classList.remove("hidden");
         };
         reader.readAsDataURL(file);
     }
@@ -167,5 +172,7 @@ function initBgRemoval() {
         dropZone.classList.remove("hidden");
         downloadBtn.classList.add("hidden");
         removeBgApiBtn.classList.add("hidden");
+        if (removeBgApiHint)
+            removeBgApiHint.classList.add("hidden");
     });
 }

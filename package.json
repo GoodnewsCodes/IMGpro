@@ -4,7 +4,7 @@
   "description": "Desktop app for manipulating images.",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc && npx esbuild src/renderer/renderer.ts --bundle --outfile=dist/renderer/renderer.js --platform=browser && shx cp src/renderer/index.html dist/renderer/index.html && shx cp src/renderer/style.css dist/renderer/style.css",
+    "build": "tsc && npx esbuild src/renderer/renderer.ts --bundle --outfile=dist/renderer/renderer.js --platform=browser && shx cp src/renderer/index.html dist/renderer/index.html && shx cp src/renderer/style.css dist/renderer/style.css && shx cp src/renderer/icon.png dist/renderer/icon.png",
     "start": "npm run build && electron .",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",

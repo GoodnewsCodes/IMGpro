@@ -49,10 +49,39 @@ body.dark-theme {
   --border-color: #334155;
 }
 
+/* Custom Scrollbar Styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 6px;
+  border: 2px solid var(--bg-app);
+  transition: var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+  border-color: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--primary);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scrollbar-width: auto;
+  scrollbar-color: var(--primary) transparent;
 }
 
 body {
@@ -65,6 +94,10 @@ body {
   height: 100vh;
   transition: background-color var(--transition-speed),
     color var(--transition-speed);
+}
+
+a {
+  color: var(--primary);
 }
 
 .app-container {
@@ -172,7 +205,8 @@ body {
   justify-content: center;
 }
 
-.nav-item span {
+.nav-item span,
+.icon-span {
   transition: opacity var(--transition-speed) ease;
 }
 
@@ -184,7 +218,8 @@ body {
   position: relative;
 }
 
-.sidebar.collapsed .nav-item span {
+.sidebar.collapsed .nav-item span,
+.icon-span {
   opacity: 0;
   width: 0;
   pointer-events: none;
@@ -211,7 +246,8 @@ body {
 }
 
 /* Tooltip arrow */
-.sidebar.collapsed .nav-item span::before {
+.sidebar.collapsed .nav-item span::before,
+.icon-span::before {
   content: "";
   position: absolute;
   left: -5px;
@@ -261,7 +297,7 @@ body {
 /* Content */
 .content {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: var(--bg-app);
@@ -272,9 +308,9 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
 }
 
 h1 {
@@ -301,12 +337,24 @@ h1 {
 }
 
 /* Tool Sections */
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .tool-section {
   background: var(--bg-card);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: var(--radius-md);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tool-section h2 {
@@ -316,18 +364,19 @@ h1 {
 
 .tool-section p {
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 /* Upload Container */
 .upload-container {
   border: 2px dashed var(--border-color);
   border-radius: var(--radius-md);
-  padding: 3rem;
+  padding: 2rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   background: var(--bg-input);
+  margin-bottom: 1rem;
 }
 
 .upload-container:hover,
@@ -353,39 +402,70 @@ h1 {
 }
 
 /* Preview Grid */
-.preview-container {
-  margin-top: 2rem;
+#preview-container,
+#conv-preview-container,
+#resize-preview-container,
+#color-preview-container,
+#edit-preview-container,
+#opt-preview-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .preview-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.preview-item {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .preview-item h3 {
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.preview-item img {
-  max-width: 100%;
-  max-height: 400px;
+.preview-item img,
+.canvas-wrapper,
+[id$="-result-wrapper"] {
+  width: 100%;
+  max-height: 450px;
   object-fit: contain;
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  height: auto;
   display: block;
+  min-height: 200px;
+  position: relative;
+  flex: 1;
 }
 
-#result-wrapper {
-  position: relative;
-  min-height: 200px;
+[id$="-result-wrapper"] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+[id$="-result-wrapper"] img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: none;
+  background: transparent;
 }
 
 /* Loading Overlay */
@@ -428,6 +508,9 @@ h1 {
   display: flex;
   gap: 1rem;
   justify-content: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -472,11 +555,15 @@ h1 {
 /* Home Section */
 .welcome-card {
   background: var(--bg-card);
-  padding: 3rem;
+  padding: 2rem;
   border-radius: var(--radius-lg);
   text-align: center;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .welcome-card h2 {
@@ -488,15 +575,16 @@ h1 {
 .welcome-card p {
   font-size: 1.1rem;
   color: var(--text-secondary);
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .tool-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .tool-icon svg {
@@ -561,14 +649,17 @@ h1 {
 /* Settings Panel */
 .settings-panel {
   background: var(--bg-input);
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .setting-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
 }
 
 .setting-group:last-child {
@@ -679,23 +770,17 @@ option {
 
 /* Pick & Replace Specific */
 .canvas-wrapper {
-  width: 100%;
-  max-width: 100%;
-  max-height: 400px;
-  overflow: auto;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 #color-canvas,
 #edit-canvas {
-  max-width: 100%;
-  max-height: 400px;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   cursor: crosshair;
   display: block;
 }
@@ -790,42 +875,53 @@ input[type="color"]::-webkit-color-swatch {
 .favicon-layout {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 2rem;
+  gap: 1.5rem;
   margin-top: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .favicon-source {
   background: var(--bg-card);
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 0;
 }
 
 .favicon-source img {
-  max-width: 100%;
-  max-height: 300px;
+  width: 100%;
   height: auto;
+  max-height: 200px;
+  object-fit: contain;
   border-radius: var(--radius-sm);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   display: block;
 }
 
 .favicon-results {
   background: var(--bg-card);
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .favicon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .favicon-item {
@@ -963,7 +1059,7 @@ input[type="color"]::-webkit-color-swatch {
 .onboarding-card {
   background: var(--bg-card);
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   padding: 3rem;
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);

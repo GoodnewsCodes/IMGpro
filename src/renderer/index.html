@@ -17,7 +17,8 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <button id="sidebar-toggle" class="icon-btn">
-            <img src="../../build/icon.png" alt="IMG" class="logo-icon" />
+            <img src="icon.png" alt="IMG" class="logo-icon" />
+            <span class="icon-span">Click Me</span>
           </button>
         </div>
         <nav>
@@ -53,7 +54,7 @@
             <i data-lucide="palette"></i>
             <span>Pick & Replace</span>
           </div>
-
+          <div class="divider"></div>
           <div class="nav-item" data-tab="settings">
             <i data-lucide="settings"></i>
             <span>Settings</span>
@@ -167,7 +168,15 @@
                 <button id="download-btn" class="btn secondary hidden">
                   Download Result
                 </button>
-                <button id="remove-bg-api-btn" class="btn secondary hidden">
+                <p
+                  id="remove-bg-api-hint"
+                  class="upload-hint"
+                  style="margin-top: 1rem; width: 100%; text-align: center"
+                >
+                  Not satisfied? Try our cloud-based alternative for better
+                  results.
+                </p>
+                <button id="remove-bg-api-btn" class="btn secondary">
                   Try remove.bg (API)
                 </button>
                 <button id="reset-btn" class="btn ghost">Reset</button>
@@ -198,42 +207,43 @@
             </div>
 
             <div id="conv-preview-container" class="hidden">
+              <div class="settings-panel">
+                <div class="setting-group">
+                  <label for="format-select">Target Format</label>
+                  <select id="format-select" class="select-input">
+                    <option value="jpg">JPEG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                    <option value="tiff">TIFF</option>
+                    <option value="gif">GIF</option>
+                    <option value="avif">AVIF</option>
+                    <option value="svg">SVG</option>
+                    <option value="icns">ICNS (macOS Icon)</option>
+                  </select>
+                </div>
+                <div class="setting-group" id="quality-group">
+                  <label for="quality-slider"
+                    >Quality: <span id="quality-value">80</span>%</label
+                  >
+                  <input
+                    type="range"
+                    id="quality-slider"
+                    min="1"
+                    max="100"
+                    value="80"
+                    class="slider"
+                  />
+                </div>
+              </div>
+
               <div class="preview-grid">
                 <div class="preview-item">
                   <h3>Original</h3>
                   <img id="conv-original-preview" src="" alt="Original" />
                 </div>
                 <div class="preview-item">
-                  <h3>Settings & Result</h3>
-                  <div class="settings-panel">
-                    <div class="setting-group">
-                      <label for="format-select">Target Format</label>
-                      <select id="format-select" class="select-input">
-                        <option value="jpg">JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="webp">WebP</option>
-                        <option value="tiff">TIFF</option>
-                        <option value="gif">GIF</option>
-                        <option value="avif">AVIF</option>
-                        <option value="svg">SVG</option>
-                        <option value="icns">ICNS (macOS Icon)</option>
-                      </select>
-                    </div>
-                    <div class="setting-group" id="quality-group">
-                      <label for="quality-slider"
-                        >Quality: <span id="quality-value">80</span>%</label
-                      >
-                      <input
-                        type="range"
-                        id="quality-slider"
-                        min="1"
-                        max="100"
-                        value="80"
-                        class="slider"
-                      />
-                    </div>
-                  </div>
-                  <div id="conv-result-wrapper" class="hidden">
+                  <h3>Result</h3>
+                  <div id="conv-result-wrapper">
                     <img id="conv-result-preview" src="" alt="Result" />
                     <div id="conv-loading-overlay" class="hidden">
                       <div class="spinner"></div>
@@ -278,6 +288,56 @@
             </div>
 
             <div id="resize-preview-container" class="hidden">
+              <div class="settings-panel">
+                <div class="setting-row">
+                  <div class="setting-group">
+                    <label for="resize-width">Width (px)</label>
+                    <input
+                      type="number"
+                      id="resize-width"
+                      class="number-input"
+                      placeholder="Width"
+                    />
+                  </div>
+                  <div class="setting-group">
+                    <label for="resize-height">Height (px)</label>
+                    <input
+                      type="number"
+                      id="resize-height"
+                      class="number-input"
+                      placeholder="Height"
+                    />
+                  </div>
+                </div>
+
+                <div class="setting-group checkbox-group">
+                  <input type="checkbox" id="lock-aspect-ratio" checked />
+                  <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
+                </div>
+
+                <div class="setting-group">
+                  <label for="resize-fit">Fit Mode</label>
+                  <select id="resize-fit" class="select-input">
+                    <option value="cover">Cover (Crop to fit)</option>
+                    <option value="contain">Contain (Add padding)</option>
+                    <option value="fill">Fill (Stretch)</option>
+                    <option value="inside">Inside (Keep aspect)</option>
+                    <option value="outside">Outside (Keep aspect)</option>
+                  </select>
+                </div>
+
+                <div class="setting-group">
+                  <label for="resize-format">Output Format</label>
+                  <select id="resize-format" class="select-input">
+                    <option value="">Same as Original</option>
+                    <option value="jpg">JPEG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                    <option value="avif">AVIF</option>
+                  </select>
+                </div>
+              </div>
+
               <div class="preview-grid">
                 <div class="preview-item">
                   <h3>Original</h3>
@@ -285,58 +345,8 @@
                   <div class="image-info" id="resize-original-info"></div>
                 </div>
                 <div class="preview-item">
-                  <h3>Resizing Settings</h3>
-                  <div class="settings-panel">
-                    <div class="setting-row">
-                      <div class="setting-group">
-                        <label for="resize-width">Width (px)</label>
-                        <input
-                          type="number"
-                          id="resize-width"
-                          class="number-input"
-                          placeholder="Width"
-                        />
-                      </div>
-                      <div class="setting-group">
-                        <label for="resize-height">Height (px)</label>
-                        <input
-                          type="number"
-                          id="resize-height"
-                          class="number-input"
-                          placeholder="Height"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="setting-group checkbox-group">
-                      <input type="checkbox" id="lock-aspect-ratio" checked />
-                      <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
-                    </div>
-
-                    <div class="setting-group">
-                      <label for="resize-fit">Fit Mode</label>
-                      <select id="resize-fit" class="select-input">
-                        <option value="cover">Cover (Crop to fit)</option>
-                        <option value="contain">Contain (Add padding)</option>
-                        <option value="fill">Fill (Stretch)</option>
-                        <option value="inside">Inside (Keep aspect)</option>
-                        <option value="outside">Outside (Keep aspect)</option>
-                      </select>
-                    </div>
-
-                    <div class="setting-group">
-                      <label for="resize-format">Output Format</label>
-                      <select id="resize-format" class="select-input">
-                        <option value="">Same as Original</option>
-                        <option value="jpg">JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="webp">WebP</option>
-                        <option value="avif">AVIF</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div id="resize-result-wrapper" class="hidden">
+                  <h3>Result</h3>
+                  <div id="resize-result-wrapper">
                     <img id="resize-result-preview" src="" alt="Result" />
                     <div id="resize-loading-overlay" class="hidden">
                       <div class="spinner"></div>
@@ -382,6 +392,57 @@
             </div>
 
             <div id="color-preview-container" class="hidden">
+              <div class="settings-panel">
+                <div class="color-picker-display">
+                  <div class="setting-group">
+                    <label>Picked Color</label>
+                    <div class="color-info-row">
+                      <div id="picked-color-swatch" class="color-swatch"></div>
+                      <input
+                        type="text"
+                        id="picked-color-hex"
+                        class="text-input"
+                        readonly
+                        value="#000000"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="color-replace-controls">
+                  <div class="setting-group">
+                    <label for="target-color-input">Replace With</label>
+                    <div class="color-info-row">
+                      <input
+                        type="color"
+                        id="target-color-input"
+                        value="#ff0000"
+                      />
+                      <input
+                        type="text"
+                        id="target-color-hex"
+                        class="text-input"
+                        value="#ff0000"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <label for="tolerance-slider"
+                      >Tolerance: <span id="tolerance-value">20</span></label
+                    >
+                    <input
+                      type="range"
+                      id="tolerance-slider"
+                      min="0"
+                      max="100"
+                      value="20"
+                      class="slider"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div class="preview-grid">
                 <div class="preview-item">
                   <h3>Original (Click to Pick Color)</h3>
@@ -390,65 +451,8 @@
                   </div>
                 </div>
                 <div class="preview-item">
-                  <h3>Color Controls & Result</h3>
-                  <div class="settings-panel">
-                    <div class="color-picker-display">
-                      <div class="setting-group">
-                        <label>Picked Color</label>
-                        <div class="color-info-row">
-                          <div
-                            id="picked-color-swatch"
-                            class="color-swatch"
-                          ></div>
-                          <input
-                            type="text"
-                            id="picked-color-hex"
-                            class="text-input"
-                            readonly
-                            value="#000000"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="divider"></div>
-
-                    <div class="color-replace-controls">
-                      <div class="setting-group">
-                        <label for="target-color-input">Replace With</label>
-                        <div class="color-info-row">
-                          <input
-                            type="color"
-                            id="target-color-input"
-                            value="#ff0000"
-                          />
-                          <input
-                            type="text"
-                            id="target-color-hex"
-                            class="text-input"
-                            value="#ff0000"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="setting-group">
-                        <label for="tolerance-slider"
-                          >Tolerance:
-                          <span id="tolerance-value">20</span></label
-                        >
-                        <input
-                          type="range"
-                          id="tolerance-slider"
-                          min="0"
-                          max="100"
-                          value="20"
-                          class="slider"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="color-result-wrapper" class="hidden">
+                  <h3>Result</h3>
+                  <div id="color-result-wrapper">
                     <img id="color-result-preview" src="" alt="Result" />
                     <div id="color-loading-overlay" class="hidden">
                       <div class="spinner"></div>
@@ -494,82 +498,69 @@
                 <button class="edit-tab" data-edit-tab="rotate">Rotate</button>
                 <button class="edit-tab" data-edit-tab="flip">Flip</button>
               </div>
+
+              <div class="settings-panel">
+                <div id="edit-content-crop" class="edit-tab-content">
+                  <div class="setting-group">
+                    <label>Crop Settings</label>
+                    <div
+                      class="setting-row"
+                      style="gap: 0.5rem; margin-bottom: 0.5rem"
+                    >
+                      <select id="crop-aspect-ratio" class="select-input">
+                        <option value="free">Free</option>
+                        <option value="1:1">1:1 (Square)</option>
+                      </select>
+                      <select id="crop-shape" class="select-input">
+                        <option value="rect">Rectangle</option>
+                        <option value="round">Round</option>
+                      </select>
+                      <button id="reset-crop-btn" class="btn ghost btn-sm">
+                        Reset Crop
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="edit-content-rotate" class="edit-tab-content hidden">
+                  <div class="setting-group">
+                    <label>Rotation</label>
+                    <div class="setting-row" style="gap: 0.5rem">
+                      <button id="rotate-left-btn" class="btn ghost btn-sm">
+                        Rotate Left 90°
+                      </button>
+                      <button id="rotate-right-btn" class="btn ghost btn-sm">
+                        Rotate Right 90°
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="edit-content-flip" class="edit-tab-content hidden">
+                  <div class="setting-group">
+                    <label>Flip</label>
+                    <div class="setting-row" style="gap: 0.5rem">
+                      <button id="flip-h-btn" class="btn ghost btn-sm">
+                        Flip Horizontal
+                      </button>
+                      <button id="flip-v-btn" class="btn ghost btn-sm">
+                        Flip Vertical
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="preview-grid">
                 <div class="preview-item">
-                  <div class="canvas-wrapper" style="max-height: 500px">
+                  <h3>Editor</h3>
+                  <div class="canvas-wrapper">
                     <canvas id="edit-canvas"></canvas>
                   </div>
                 </div>
                 <div class="preview-item">
-                  <h3>Controls</h3>
-                  <div class="settings-panel">
-                    <div id="edit-content-crop" class="edit-tab-content">
-                      <div class="setting-group">
-                        <label>Crop Settings</label>
-                        <div
-                          class="setting-row"
-                          style="gap: 0.5rem; margin-bottom: 0.5rem"
-                        >
-                          <select id="crop-aspect-ratio" class="select-input">
-                            <option value="free">Free</option>
-                            <option value="1:1">1:1 (Square)</option>
-                          </select>
-                          <select id="crop-shape" class="select-input">
-                            <option value="rect">Rectangle</option>
-                            <option value="round">Round</option>
-                          </select>
-                        </div>
-                        <p style="font-size: 0.8rem; margin-bottom: 0.5rem">
-                          Drag on the image to select crop area.
-                        </p>
-                        <button id="reset-crop-btn" class="btn ghost">
-                          Reset Crop
-                        </button>
-                      </div>
-                    </div>
-
-                    <div
-                      id="edit-content-rotate"
-                      class="edit-tab-content hidden"
-                    >
-                      <div class="setting-group">
-                        <label>Rotation</label>
-                        <div
-                          class="actions"
-                          style="
-                            justify-content: flex-start;
-                            margin-bottom: 1rem;
-                          "
-                        >
-                          <button id="rotate-left-btn" class="btn ghost">
-                            Rotate Left 90°
-                          </button>
-                          <button id="rotate-right-btn" class="btn ghost">
-                            Rotate Right 90°
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div id="edit-content-flip" class="edit-tab-content hidden">
-                      <div class="setting-group">
-                        <label>Flip</label>
-                        <div
-                          class="actions"
-                          style="justify-content: flex-start"
-                        >
-                          <button id="flip-h-btn" class="btn ghost">
-                            Flip Horizontal
-                          </button>
-                          <button id="flip-v-btn" class="btn ghost">
-                            Flip Vertical
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="edit-result-wrapper" class="hidden">
+                  <h3>Result</h3>
+                  <div id="edit-result-wrapper">
                     <img id="edit-result-preview" src="" alt="Result" />
                     <div id="edit-loading-overlay" class="hidden">
                       <div class="spinner"></div>
@@ -706,6 +697,40 @@
             </div>
 
             <div id="opt-preview-container" class="hidden">
+              <div class="settings-panel">
+                <div class="setting-group">
+                  <label for="opt-preset-select">Optimization Preset</label>
+                  <select id="opt-preset-select" class="select-input">
+                    <option value="balanced">Balanced (Recommended)</option>
+                    <option value="small">Small File Size (Web)</option>
+                    <option value="high">High Quality</option>
+                  </select>
+                </div>
+                <div class="setting-group">
+                  <label for="opt-format-select">Output Format</label>
+                  <select id="opt-format-select" class="select-input">
+                    <option value="">Keep Original Format</option>
+                    <option value="webp">WebP (Best for Web)</option>
+                    <option value="avif">AVIF (Next-Gen)</option>
+                    <option value="jpg">JPEG</option>
+                    <option value="png">PNG</option>
+                  </select>
+                </div>
+                <div class="setting-group">
+                  <label for="opt-quality-slider"
+                    >Quality: <span id="opt-quality-value">80</span>%</label
+                  >
+                  <input
+                    type="range"
+                    id="opt-quality-slider"
+                    min="1"
+                    max="100"
+                    value="80"
+                    class="slider"
+                  />
+                </div>
+              </div>
+
               <div class="preview-grid">
                 <div class="preview-item">
                   <h3>Original</h3>
@@ -713,41 +738,8 @@
                   <div class="image-info" id="opt-original-info"></div>
                 </div>
                 <div class="preview-item">
-                  <h3>Settings & Result</h3>
-                  <div class="settings-panel">
-                    <div class="setting-group">
-                      <label for="opt-preset-select">Optimization Preset</label>
-                      <select id="opt-preset-select" class="select-input">
-                        <option value="balanced">Balanced (Recommended)</option>
-                        <option value="small">Small File Size (Web)</option>
-                        <option value="high">High Quality</option>
-                      </select>
-                    </div>
-                    <div class="setting-group">
-                      <label for="opt-format-select">Output Format</label>
-                      <select id="opt-format-select" class="select-input">
-                        <option value="">Keep Original Format</option>
-                        <option value="webp">WebP (Best for Web)</option>
-                        <option value="avif">AVIF (Next-Gen)</option>
-                        <option value="jpg">JPEG</option>
-                        <option value="png">PNG</option>
-                      </select>
-                    </div>
-                    <div class="setting-group">
-                      <label for="opt-quality-slider"
-                        >Quality: <span id="opt-quality-value">80</span>%</label
-                      >
-                      <input
-                        type="range"
-                        id="opt-quality-slider"
-                        min="1"
-                        max="100"
-                        value="80"
-                        class="slider"
-                      />
-                    </div>
-                  </div>
-                  <div id="opt-result-wrapper" class="hidden">
+                  <h3>Result</h3>
+                  <div id="opt-result-wrapper">
                     <img id="opt-result-preview" src="" alt="Result" />
                     <div class="image-info" id="opt-result-info"></div>
                     <div id="opt-loading-overlay" class="hidden">
@@ -858,7 +850,7 @@
           <!-- Step 1: Welcome -->
           <div class="onboarding-step active" data-step="1">
             <div class="onboarding-icon-large">
-              <img src="../../build/icon.png" alt="IMGpro Logo" />
+              <img src="icon.png" alt="IMGpro Logo" />
             </div>
             <h2>Welcome to IMGpro</h2>
             <p>
@@ -921,11 +913,5 @@
         </div>
       </div>
     </div>
-
-    <script src="../../node_modules/lucide/dist/umd/lucide.min.js"></script>
-    <script>
-      // Initial icon render for static elements if needed
-      // lucide.createIcons();
-    </script>
   </body>
 </html>

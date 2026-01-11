@@ -108,9 +108,16 @@ function initImageManipulation() {
         flipV = false;
         cropRect = { left: 0, top: 0, width: 0, height: 0 };
         isCropping = false;
+        cropAspectRatio = "free";
+        cropShape = "rect";
+        if (cropAspectRatioSelect)
+            cropAspectRatioSelect.value = "free";
+        if (cropShapeSelect)
+            cropShapeSelect.value = "rect";
         editResultWrapper?.classList.add("hidden");
-        editDownloadBtn.classList.add("hidden");
-        // Reset controls if needed, but maybe keep user preference
+        editDownloadBtn?.classList.add("hidden");
+        editResultPreview.src = "";
+        editBuffer = null;
     }
     function renderEditCanvas() {
         if (!originalImage || !editCanvas)
@@ -363,8 +370,12 @@ function initImageManipulation() {
             }
         }
     });
-    editResetBtn.addEventListener("click", () => {
-        if (currentFile)
-            handleEditFile(currentFile);
+    editResetBtn?.addEventListener("click", () => {
+        editPreviewContainer?.classList.add("hidden");
+        editDropZone?.classList.remove("hidden");
+        editFileInput.value = "";
+        currentFile = null;
+        originalImage = null;
+        resetEditState();
     });
 }

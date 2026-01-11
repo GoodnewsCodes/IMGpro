@@ -27388,9 +27388,12 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const removeBgApiBtn = document.getElementById(
       "remove-bg-api-btn"
     );
+    const removeBgApiHint = document.getElementById(
+      "remove-bg-api-hint"
+    );
     let selectedFile = null;
     let processedBlob = null;
-    if (!fileInput || !dropZone || !previewContainer || !originalPreview || !resultPreview || !processBtn || !downloadBtn || !resetBtn || !loadingOverlay || !loadingText || !removeBgApiBtn) {
+    if (!fileInput || !dropZone || !previewContainer || !originalPreview || !resultPreview || !processBtn || !downloadBtn || !resetBtn || !loadingOverlay || !loadingText || !removeBgApiBtn || !removeBgApiHint) {
       console.error("Background removal elements not found");
       return;
     }
@@ -27434,7 +27437,8 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         dropZone.classList.add("hidden");
         resultPreview.src = "";
         downloadBtn.classList.add("hidden");
-        removeBgApiBtn.classList.add("hidden");
+        removeBgApiBtn.classList.remove("hidden");
+        if (removeBgApiHint) removeBgApiHint.classList.remove("hidden");
       };
       reader.readAsDataURL(file);
     }
@@ -27516,6 +27520,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       dropZone.classList.remove("hidden");
       downloadBtn.classList.add("hidden");
       removeBgApiBtn.classList.add("hidden");
+      if (removeBgApiHint) removeBgApiHint.classList.add("hidden");
     });
   }
 
@@ -28290,8 +28295,14 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       flipV = false;
       cropRect = { left: 0, top: 0, width: 0, height: 0 };
       isCropping = false;
+      cropAspectRatio = "free";
+      cropShape = "rect";
+      if (cropAspectRatioSelect) cropAspectRatioSelect.value = "free";
+      if (cropShapeSelect) cropShapeSelect.value = "rect";
       editResultWrapper?.classList.add("hidden");
-      editDownloadBtn.classList.add("hidden");
+      editDownloadBtn?.classList.add("hidden");
+      editResultPreview.src = "";
+      editBuffer = null;
     }
     function renderEditCanvas() {
       if (!originalImage || !editCanvas) return;
@@ -28536,8 +28547,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         }
       }
     });
-    editResetBtn.addEventListener("click", () => {
-      if (currentFile) handleEditFile(currentFile);
+    editResetBtn?.addEventListener("click", () => {
+      editPreviewContainer?.classList.add("hidden");
+      editDropZone?.classList.remove("hidden");
+      editFileInput.value = "";
+      currentFile = null;
+      originalImage = null;
+      resetEditState();
     });
   }
 
@@ -28568,9 +28584,12 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const FAVICON_CONFIG = [
       { name: "favicon-16x16.png", size: 16, type: "image/png" },
       { name: "favicon-32x32.png", size: 32, type: "image/png" },
-      { name: "apple-touch-icon.png", size: 180, type: "image/png" },
-      { name: "android-chrome-192x192.png", size: 192, type: "image/png" },
-      { name: "android-chrome-512x512.png", size: 512, type: "image/png" }
+      { name: "favicon-96x96.png", size: 96, type: "image/png" },
+      { name: "apple-icon-152x152.png", size: 152, type: "image/png" },
+      { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
+      { name: "android-icon-192x192.png", size: 192, type: "image/png" },
+      { name: "android-chrome-512x512.png", size: 512, type: "image/png" },
+      { name: "ms-icon-144x144.png", size: 144, type: "image/png" }
     ];
     const ICO_SIZES = [16, 32, 48];
     let currentFile = null;
@@ -28682,23 +28701,43 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         console.error("Error generating favicon.ico:", error);
       }
       const manifest = {
-        name: "App Name",
-        short_name: "App",
+        name: "ETHEGEN - AI-Powered Cybersecurity Platform",
+        short_name: "ETHEGEN",
+        description: "Enterprise-grade cybersecurity platform with AI-powered threat detection and security operations",
         icons: [
           {
-            src: "/android-chrome-192x192.png",
-            sizes: "192x192",
+            src: "/favicon-16x16.png",
+            sizes: "16x16",
             type: "image/png"
+          },
+          {
+            src: "/favicon-32x32.png",
+            sizes: "32x32",
+            type: "image/png"
+          },
+          {
+            src: "/favicon-96x96.png",
+            sizes: "96x96",
+            type: "image/png"
+          },
+          {
+            src: "/android-icon-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any"
           },
           {
             src: "/android-chrome-512x512.png",
             sizes: "512x512",
-            type: "image/png"
+            type: "image/png",
+            purpose: "any"
           }
         ],
         theme_color: "#ffffff",
         background_color: "#ffffff",
-        display: "standalone"
+        display: "standalone",
+        scope: "/",
+        start_url: "/"
       };
       const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
         type: "application/json"
@@ -28738,11 +28777,22 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     }
     function updateHtmlSnippet() {
       if (!htmlCode) return;
-      const snippet = `<!-- Favicon links -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">`;
+      const snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+
+<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
+<meta name="theme-color" content="#ffffff" />`;
       htmlCode.textContent = snippet;
     }
     async function downloadBlob(blob, fileName) {
@@ -28961,6 +29011,74 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  // src/renderer/features/onboarding.ts
+  function initOnboarding() {
+    const overlay = document.getElementById("onboarding-overlay");
+    const steps = document.querySelectorAll(".onboarding-step");
+    const dots = document.querySelectorAll(".dot");
+    const nextBtn = document.getElementById("onboarding-next");
+    const prevBtn = document.getElementById("onboarding-prev");
+    const finishBtn = document.getElementById("onboarding-finish");
+    const skipBtn = document.getElementById("onboarding-skip");
+    let currentStep = 1;
+    const totalSteps = steps.length;
+    const onboardingCompleted = localStorage.getItem("onboarding-completed");
+    if (onboardingCompleted === "true") {
+      overlay?.classList.add("hidden");
+      return;
+    } else {
+      overlay?.classList.remove("hidden");
+    }
+    function updateUI() {
+      steps.forEach((step) => {
+        const stepNum = parseInt(step.dataset.step || "0");
+        if (stepNum === currentStep) {
+          step.classList.add("active");
+        } else {
+          step.classList.remove("active");
+        }
+      });
+      dots.forEach((dot, index) => {
+        if (index + 1 === currentStep) {
+          dot.classList.add("active");
+        } else {
+          dot.classList.remove("active");
+        }
+      });
+      if (currentStep === 1) {
+        prevBtn?.classList.add("hidden");
+      } else {
+        prevBtn?.classList.remove("hidden");
+      }
+      if (currentStep === totalSteps) {
+        nextBtn?.classList.add("hidden");
+        finishBtn?.classList.remove("hidden");
+      } else {
+        nextBtn?.classList.remove("hidden");
+        finishBtn?.classList.add("hidden");
+      }
+    }
+    nextBtn?.addEventListener("click", () => {
+      if (currentStep < totalSteps) {
+        currentStep++;
+        updateUI();
+      }
+    });
+    prevBtn?.addEventListener("click", () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateUI();
+      }
+    });
+    function completeOnboarding() {
+      localStorage.setItem("onboarding-completed", "true");
+      overlay?.classList.add("hidden");
+    }
+    finishBtn?.addEventListener("click", completeOnboarding);
+    skipBtn?.addEventListener("click", completeOnboarding);
+    updateUI();
   }
 
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/defaultAttributes.js
@@ -29212,23 +29330,6 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
   };
 
   // src/renderer/renderer.ts
-  createIcons({
-    icons: {
-      Palette,
-      Scissors,
-      Ruler,
-      RefreshCw,
-      Image: Image2,
-      Upload,
-      FlipHorizontal,
-      Globe,
-      Menu,
-      Home: House,
-      Zap,
-      Crop,
-      Settings
-    }
-  });
   var sidebar = document.querySelector(".sidebar");
   var sidebarToggle = document.getElementById("sidebar-toggle");
   if (sidebarToggle && sidebar) {
@@ -29274,6 +29375,23 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     });
   });
   document.addEventListener("DOMContentLoaded", () => {
+    createIcons({
+      icons: {
+        Palette,
+        Scissors,
+        Ruler,
+        RefreshCw,
+        Image: Image2,
+        Upload,
+        FlipHorizontal,
+        Globe,
+        Menu,
+        Home: House,
+        Zap,
+        Crop,
+        Settings
+      }
+    });
     initBgRemoval();
     initImageConversion();
     initImageResizing();
@@ -29282,6 +29400,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     initFaviconGenerator();
     initOptimization();
     initSettings();
+    initOnboarding();
   });
   var dragCounter = 0;
   document.addEventListener("dragenter", (e) => {

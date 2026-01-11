@@ -24,25 +24,6 @@ import {
   Settings,
 } from "lucide";
 
-// Initialize icons
-createIcons({
-  icons: {
-    Palette,
-    Scissors,
-    Ruler,
-    RefreshCw,
-    Image: ImageIcon,
-    Upload,
-    FlipHorizontal,
-    Globe,
-    Menu,
-    Home,
-    Zap,
-    Crop,
-    Settings,
-  },
-});
-
 // Sidebar Toggle
 const sidebar = document.querySelector(".sidebar");
 const sidebarToggle = document.getElementById("sidebar-toggle");
@@ -105,6 +86,25 @@ toolCards.forEach((card) => {
 
 // Initialize features
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize icons
+  createIcons({
+    icons: {
+      Palette,
+      Scissors,
+      Ruler,
+      RefreshCw,
+      Image: ImageIcon,
+      Upload,
+      FlipHorizontal,
+      Globe,
+      Menu,
+      Home,
+      Zap,
+      Crop,
+      Settings,
+    },
+  });
+
   initBgRemoval();
   initImageConversion();
   initImageResizing();
