@@ -53,6 +53,7 @@ declare global {
       removeBgApi: (
         buffer: Uint8Array
       ) => Promise<{ success: boolean; buffer?: Uint8Array; error?: string }>;
+      clearCache: () => Promise<{ success: boolean; error?: string }>;
     };
   }
 }

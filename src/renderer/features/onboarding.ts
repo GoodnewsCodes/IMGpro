@@ -15,8 +15,26 @@ export function initOnboarding() {
   if (onboardingCompleted === "true") {
     overlay?.classList.add("hidden");
     return;
-  } else {
+  }
+
+  // Wait for the logo image to load before showing the onboarding
+  const logoImg = document.querySelector(
+    '.onboarding-step[data-step="1"] img'
+  ) as HTMLImageElement;
+
+  const showOverlay = () => {
     overlay?.classList.remove("hidden");
+  };
+
+  if (logoImg) {
+    if (logoImg.complete) {
+      showOverlay();
+    } else {
+      logoImg.addEventListener("load", showOverlay);
+      logoImg.addEventListener("error", showOverlay); // Show anyway if it fails
+    }
+  } else {
+    showOverlay();
   }
 
   function updateUI() {

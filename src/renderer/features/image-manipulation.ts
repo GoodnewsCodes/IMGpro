@@ -312,6 +312,9 @@ export function initImageManipulation() {
       dragOffset.y = mouseY - cropRect.top;
       editCanvas.style.cursor = "move";
     } else {
+      // If clicking outside, we might want to clear the crop if it's just a click
+      // but for now, we start a new crop.
+      // We'll check in mouseup if it was just a click.
       cropStart.x = mouseX;
       cropStart.y = mouseY;
       isCropping = true;
@@ -375,7 +378,29 @@ export function initImageManipulation() {
     }
   });
 
-  window.addEventListener("mouseup", () => {
+  window.addEventListener("mouseup", (e) => {
+    if (!isCropping && !isDraggingCrop) return;
+
+    // If it was a tiny drag (just a click) outside the previous crop, clear it
+    if (isCropping) {
+      const rect = editCanvas.getBoundingClientRect();
+      const scaleX = editCanvas.width / rect.width;
+      const scaleY = editCanvas.height / rect.height;
+      const currentX = (e.clientX - rect.left) * scaleX;
+      const currentY = (e.clientY - rect.top) * scaleY;
+
+      const dist = Math.sqrt(
+        Math.pow(currentX - cropStart.x, 2) +
+          Math.pow(currentY - cropStart.y, 2)
+      );
+
+      if (dist < 5) {
+        // Just a click, clear crop
+        cropRect = { left: 0, top: 0, width: 0, height: 0 };
+        renderEditCanvas();
+      }
+    }
+
     isCropping = false;
     isDraggingCrop = false;
     if (editCanvas) editCanvas.style.cursor = "default";

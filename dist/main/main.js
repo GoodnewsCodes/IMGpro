@@ -75,13 +75,28 @@ function createWindow() {
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
 }
-electron_1.app.whenReady().then(() => {
-    createWindow();
-    electron_1.app.on("activate", () => {
-        if (electron_1.BrowserWindow.getAllWindows().length === 0)
-            createWindow();
+const gotTheLock = electron_1.app.requestSingleInstanceLock();
+if (!gotTheLock) {
+    electron_1.app.quit();
+}
+else {
+    electron_1.app.on("second-instance", (_event, _commandLine, _workingDirectory) => {
+        // Someone tried to run a second instance, we should focus our window.
+        const windows = electron_1.BrowserWindow.getAllWindows();
+        if (windows.length > 0) {
+            if (windows[0].isMinimized())
+                windows[0].restore();
+            windows[0].focus();
+        }
     });
-});
+    electron_1.app.whenReady().then(() => {
+        createWindow();
+        electron_1.app.on("activate", () => {
+            if (electron_1.BrowserWindow.getAllWindows().length === 0)
+                createWindow();
+        });
+    });
+}
 electron_1.app.on("window-all-closed", () => {
     if (process.platform !== "darwin")
         electron_1.app.quit();
@@ -410,6 +425,20 @@ electron_1.ipcMain.handle("remove-bg-api", async (_event, buffer) => {
     }
     catch (error) {
         console.error("remove.bg API error:", error);
+        return { success: false, error: error.message };
+    }
+});
+electron_1.ipcMain.handle("clear-cache", async () => {
+    try {
+        const session = electron_1.BrowserWindow.getAllWindows()[0]?.webContents.session;
+        if (session) {
+            await session.clearCache();
+            await session.clearStorageData();
+        }
+        return { success: true };
+    }
+    catch (error) {
+        console.error("Clear cache error:", error);
         return { success: false, error: error.message };
     }
 });

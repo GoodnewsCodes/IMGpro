@@ -68,6 +68,25 @@ export function initSettings() {
     alert("Settings saved successfully!");
   });
 
+  // Clear Cache
+  const clearCacheBtn = document.getElementById("clear-cache-btn");
+  clearCacheBtn?.addEventListener("click", async () => {
+    if (
+      confirm(
+        "Are you sure you want to clear the application cache? This will also clear all saved settings and reset the app."
+      )
+    ) {
+      const result = await window.electronAPI.clearCache();
+      if (result.success) {
+        localStorage.clear();
+        alert("Cache cleared successfully. The application will now restart.");
+        window.location.reload();
+      } else {
+        alert("Failed to clear cache: " + result.error);
+      }
+    }
+  });
+
   // remove.bg API Key Management
   const removeBgKeyInput = document.getElementById(
     "remove-bg-key-input"

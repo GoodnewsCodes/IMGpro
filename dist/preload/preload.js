@@ -14,4 +14,5 @@ electron_1.contextBridge.exposeInMainWorld("electronAPI", {
     getRemoveBgKey: () => electron_1.ipcRenderer.invoke("get-remove-bg-key"),
     setRemoveBgKey: (key) => electron_1.ipcRenderer.invoke("set-remove-bg-key", key),
     removeBgApi: (buffer) => electron_1.ipcRenderer.invoke("remove-bg-api", buffer),
+    clearCache: () => electron_1.ipcRenderer.invoke("clear-cache"),
 });

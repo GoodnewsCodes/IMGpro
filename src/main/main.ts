@@ -53,13 +53,28 @@ function createWindow() {
   // mainWindow.webContents.openDevTools();
 }
 
-app.whenReady().then(() => {
-  createWindow();
+const gotTheLock = app.requestSingleInstanceLock();
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", (_event, _commandLine, _workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    const windows = BrowserWindow.getAllWindows();
+    if (windows.length > 0) {
+      if (windows[0].isMinimized()) windows[0].restore();
+      windows[0].focus();
+    }
   });
-});
+
+  app.whenReady().then(() => {
+    createWindow();
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
@@ -509,6 +524,20 @@ ipcMain.handle("remove-bg-api", async (_event, buffer: Uint8Array) => {
     return { success: true, buffer: new Uint8Array(arrayBuffer) };
   } catch (error: any) {
     console.error("remove.bg API error:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("clear-cache", async () => {
+  try {
+    const session = BrowserWindow.getAllWindows()[0]?.webContents.session;
+    if (session) {
+      await session.clearCache();
+      await session.clearStorageData();
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("Clear cache error:", error);
     return { success: false, error: error.message };
   }
 });

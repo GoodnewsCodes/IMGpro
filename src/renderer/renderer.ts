@@ -22,6 +22,10 @@ import {
   Zap,
   Crop,
   Settings,
+  Info,
+  ExternalLink,
+  Search,
+  User,
 } from "lucide";
 
 // Sidebar Toggle
@@ -84,6 +88,20 @@ toolCards.forEach((card) => {
   });
 });
 
+/**
+ * Loads images that were deferred with data-src
+ */
+function loadMainAppImages() {
+  const images = document.querySelectorAll("img[data-src]");
+  images.forEach((img) => {
+    const htmlImg = img as HTMLImageElement;
+    if (htmlImg.dataset.src) {
+      htmlImg.src = htmlImg.dataset.src;
+      htmlImg.removeAttribute("data-src");
+    }
+  });
+}
+
 // Initialize features
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize icons
@@ -102,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
       Zap,
       Crop,
       Settings,
+      Info,
+      ExternalLink,
+      Search,
+      User,
     },
   });
 
@@ -114,6 +136,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initOptimization();
   initSettings();
   initOnboarding();
+
+  // Start loading main app images in the background
+  // This satisfies the requirement to load onboarding first, then main app assets
+  setTimeout(loadMainAppImages, 500);
 });
 
 // Global Drag & Drop Visual Feedback

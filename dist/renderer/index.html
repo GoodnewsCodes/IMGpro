@@ -17,7 +17,7 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <button id="sidebar-toggle" class="icon-btn">
-            <img src="icon.png" alt="IMG" class="logo-icon" />
+            <img data-src="icon.png" alt="IMG" class="logo-icon" />
             <span class="icon-span">Click Me</span>
           </button>
         </div>
@@ -54,10 +54,14 @@
             <i data-lucide="palette"></i>
             <span>Pick & Replace</span>
           </div>
-
+          <div class="divider"></div>
           <div class="nav-item" data-tab="settings">
             <i data-lucide="settings"></i>
             <span>Settings</span>
+          </div>
+          <div class="nav-item" data-tab="about">
+            <i data-lucide="info"></i>
+            <span>About Dev</span>
           </div>
         </nav>
       </aside>
@@ -288,57 +292,60 @@
             </div>
 
             <div id="resize-preview-container" class="hidden">
-              <div class="settings-panel">
-                <div class="setting-row">
-                  <div class="setting-group">
-                    <label for="resize-width">Width (px)</label>
-                    <input
-                      type="number"
-                      id="resize-width"
-                      class="number-input"
-                      placeholder="Width"
-                    />
+              <div class="settings-panel resizer-settings">
+                <div class="settings-left">
+                  <div class="setting-row">
+                    <div class="setting-group">
+                      <label for="resize-width">Width (px)</label>
+                      <input
+                        type="number"
+                        id="resize-width"
+                        class="number-input"
+                        placeholder="Width"
+                      />
+                    </div>
+                    <div class="setting-group">
+                      <label for="resize-height">Height (px)</label>
+                      <input
+                        type="number"
+                        id="resize-height"
+                        class="number-input"
+                        placeholder="Height"
+                      />
+                    </div>
                   </div>
-                  <div class="setting-group">
-                    <label for="resize-height">Height (px)</label>
-                    <input
-                      type="number"
-                      id="resize-height"
-                      class="number-input"
-                      placeholder="Height"
-                    />
+                  <div class="setting-group checkbox-group">
+                    <input type="checkbox" id="lock-aspect-ratio" checked />
+                    <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
                   </div>
                 </div>
 
-                <div class="setting-group checkbox-group">
-                  <input type="checkbox" id="lock-aspect-ratio" checked />
-                  <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
-                </div>
+                <div class="settings-right">
+                  <div class="setting-group">
+                    <label for="resize-fit">Fit Mode</label>
+                    <select id="resize-fit" class="select-input">
+                      <option value="cover">Cover (Crop to fit)</option>
+                      <option value="contain">Contain (Add padding)</option>
+                      <option value="fill">Fill (Stretch)</option>
+                      <option value="inside">Inside (Keep aspect)</option>
+                      <option value="outside">Outside (Keep aspect)</option>
+                    </select>
+                  </div>
 
-                <div class="setting-group">
-                  <label for="resize-fit">Fit Mode</label>
-                  <select id="resize-fit" class="select-input">
-                    <option value="cover">Cover (Crop to fit)</option>
-                    <option value="contain">Contain (Add padding)</option>
-                    <option value="fill">Fill (Stretch)</option>
-                    <option value="inside">Inside (Keep aspect)</option>
-                    <option value="outside">Outside (Keep aspect)</option>
-                  </select>
-                </div>
-
-                <div class="setting-group">
-                  <label for="resize-format">Output Format</label>
-                  <select id="resize-format" class="select-input">
-                    <option value="">Same as Original</option>
-                    <option value="jpg">JPEG</option>
-                    <option value="png">PNG</option>
-                    <option value="webp">WebP</option>
-                    <option value="avif">AVIF</option>
-                  </select>
+                  <div class="setting-group">
+                    <label for="resize-format">Output Format</label>
+                    <select id="resize-format" class="select-input">
+                      <option value="">Same as Original</option>
+                      <option value="jpg">JPEG</option>
+                      <option value="png">PNG</option>
+                      <option value="webp">WebP</option>
+                      <option value="avif">AVIF</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div class="preview-grid">
+              <div class="preview-grid side-by-side">
                 <div class="preview-item">
                   <h3>Original</h3>
                   <img id="resize-original-preview" src="" alt="Original" />
@@ -551,7 +558,7 @@
                 </div>
               </div>
 
-              <div class="preview-grid">
+              <div class="preview-grid side-by-side">
                 <div class="preview-item">
                   <h3>Editor</h3>
                   <div class="canvas-wrapper">
@@ -610,10 +617,7 @@
                 <div class="favicon-source">
                   <h3>Original Image</h3>
                   <img id="favicon-original-preview" src="" alt="Original" />
-                  <div
-                    class="setting-group"
-                    style="margin-top: 1rem; margin-bottom: 1rem"
-                  >
+                  <div class="setting-group" style="margin-top: 1rem">
                     <label
                       for="favicon-shape"
                       style="
@@ -632,9 +636,11 @@
                       <option value="rounded">Rounded Corners</option>
                       <option value="circle">Circle</option>
                     </select>
-                  </div>
-                  <div class="actions">
-                    <button id="favicon-reset-btn" class="btn ghost">
+                    <button
+                      id="favicon-reset-btn"
+                      class="btn ghost"
+                      style="width: 100%; margin-top: 1rem"
+                    >
                       Reset
                     </button>
                   </div>
@@ -826,6 +832,34 @@
               <button id="save-settings-btn" class="btn primary">
                 Save Settings
               </button>
+              <button id="clear-cache-btn" class="btn ghost">
+                Clear Cache
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- About Developer Section -->
+        <section id="about-section" class="tab-content hidden">
+          <header>
+            <h1>About Developer</h1>
+          </header>
+          <div class="tool-section about-dev-container">
+            <div class="dev-info">
+              <div class="dev-icon-masked">
+                <i data-lucide="user"></i>
+              </div>
+              <h2>Goodnews Anwana</h2>
+              <p class="dev-tagline">Full Stack Developer & UI/UX Enthusiast</p>
+              <p class="dev-description">
+                Passionate about building high-quality desktop, mobile and web
+                applications with a focus on performance and user experience.
+              </p>
+              <div class="dev-links">
+                <a href="https://goodnewscodes.github.io" target="_blank">
+                  Portfolio <i data-lucide="external-link"></i>
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -849,9 +883,11 @@
         <div class="onboarding-steps">
           <!-- Step 1: Welcome -->
           <div class="onboarding-step active" data-step="1">
-            <div class="onboarding-icon-large">
-              <img src="icon.png" alt="IMGpro Logo" />
-            </div>
+            <img
+              src="icon.png"
+              alt="IMGpro Logo"
+              class="onboarding-welcome-logo"
+            />
             <h2>Welcome to IMGpro</h2>
             <p>
               Your all-in-one desktop companion for professional image

@@ -27575,6 +27575,21 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       applyTheme(newSettings.theme);
       alert("Settings saved successfully!");
     });
+    const clearCacheBtn = document.getElementById("clear-cache-btn");
+    clearCacheBtn?.addEventListener("click", async () => {
+      if (confirm(
+        "Are you sure you want to clear the application cache? This will also clear all saved settings and reset the app."
+      )) {
+        const result = await window.electronAPI.clearCache();
+        if (result.success) {
+          localStorage.clear();
+          alert("Cache cleared successfully. The application will now restart.");
+          window.location.reload();
+        } else {
+          alert("Failed to clear cache: " + result.error);
+        }
+      }
+    });
     const removeBgKeyInput = document.getElementById(
       "remove-bg-key-input"
     );
@@ -28477,7 +28492,22 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         renderEditCanvas();
       }
     });
-    window.addEventListener("mouseup", () => {
+    window.addEventListener("mouseup", (e) => {
+      if (!isCropping && !isDraggingCrop) return;
+      if (isCropping) {
+        const rect = editCanvas.getBoundingClientRect();
+        const scaleX = editCanvas.width / rect.width;
+        const scaleY = editCanvas.height / rect.height;
+        const currentX = (e.clientX - rect.left) * scaleX;
+        const currentY = (e.clientY - rect.top) * scaleY;
+        const dist = Math.sqrt(
+          Math.pow(currentX - cropStart.x, 2) + Math.pow(currentY - cropStart.y, 2)
+        );
+        if (dist < 5) {
+          cropRect = { left: 0, top: 0, width: 0, height: 0 };
+          renderEditCanvas();
+        }
+      }
       isCropping = false;
       isDraggingCrop = false;
       if (editCanvas) editCanvas.style.cursor = "default";
@@ -29028,8 +29058,22 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     if (onboardingCompleted === "true") {
       overlay?.classList.add("hidden");
       return;
-    } else {
+    }
+    const logoImg = document.querySelector(
+      '.onboarding-step[data-step="1"] img'
+    );
+    const showOverlay = () => {
       overlay?.classList.remove("hidden");
+    };
+    if (logoImg) {
+      if (logoImg.complete) {
+        showOverlay();
+      } else {
+        logoImg.addEventListener("load", showOverlay);
+        logoImg.addEventListener("error", showOverlay);
+      }
+    } else {
+      showOverlay();
     }
     function updateUI() {
       steps.forEach((step) => {
@@ -29171,6 +29215,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     ["path", { d: "M18 22V8a2 2 0 0 0-2-2H2" }]
   ];
 
+  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/external-link.js
+  var ExternalLink = [
+    ["path", { d: "M15 3h6v6" }],
+    ["path", { d: "M10 14 21 3" }],
+    ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }]
+  ];
+
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/flip-horizontal.js
   var FlipHorizontal = [
     ["path", { d: "M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" }],
@@ -29204,6 +29255,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2" }],
     ["circle", { cx: "9", cy: "9", r: "2" }],
     ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" }]
+  ];
+
+  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/info.js
+  var Info = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 16v-4" }],
+    ["path", { d: "M12 8h.01" }]
   ];
 
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/menu.js
@@ -29258,6 +29316,12 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     ["path", { d: "M14.8 14.8 20 20" }]
   ];
 
+  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/search.js
+  var Search = [
+    ["path", { d: "m21 21-4.34-4.34" }],
+    ["circle", { cx: "11", cy: "11", r: "8" }]
+  ];
+
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/settings.js
   var Settings = [
     [
@@ -29274,6 +29338,12 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     ["path", { d: "M12 3v12" }],
     ["path", { d: "m17 8-5-5-5 5" }],
     ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }]
+  ];
+
+  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/user.js
+  var User = [
+    ["path", { d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" }],
+    ["circle", { cx: "12", cy: "7", r: "4" }]
   ];
 
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/zap.js
@@ -29374,6 +29444,16 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       if (tabId) switchTab(tabId);
     });
   });
+  function loadMainAppImages() {
+    const images = document.querySelectorAll("img[data-src]");
+    images.forEach((img) => {
+      const htmlImg = img;
+      if (htmlImg.dataset.src) {
+        htmlImg.src = htmlImg.dataset.src;
+        htmlImg.removeAttribute("data-src");
+      }
+    });
+  }
   document.addEventListener("DOMContentLoaded", () => {
     createIcons({
       icons: {
@@ -29389,7 +29469,11 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         Home: House,
         Zap,
         Crop,
-        Settings
+        Settings,
+        Info,
+        ExternalLink,
+        Search,
+        User
       }
     });
     initBgRemoval();
@@ -29401,6 +29485,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     initOptimization();
     initSettings();
     initOnboarding();
+    setTimeout(loadMainAppImages, 500);
   });
   var dragCounter = 0;
   document.addEventListener("dragenter", (e) => {
@@ -29526,17 +29611,21 @@ lucide/dist/esm/defaultAttributes.js:
 lucide/dist/esm/createElement.js:
 lucide/dist/esm/replaceElement.js:
 lucide/dist/esm/icons/crop.js:
+lucide/dist/esm/icons/external-link.js:
 lucide/dist/esm/icons/flip-horizontal.js:
 lucide/dist/esm/icons/globe.js:
 lucide/dist/esm/icons/house.js:
 lucide/dist/esm/icons/image.js:
+lucide/dist/esm/icons/info.js:
 lucide/dist/esm/icons/menu.js:
 lucide/dist/esm/icons/palette.js:
 lucide/dist/esm/icons/refresh-cw.js:
 lucide/dist/esm/icons/ruler.js:
 lucide/dist/esm/icons/scissors.js:
+lucide/dist/esm/icons/search.js:
 lucide/dist/esm/icons/settings.js:
 lucide/dist/esm/icons/upload.js:
+lucide/dist/esm/icons/user.js:
 lucide/dist/esm/icons/zap.js:
 lucide/dist/esm/lucide.js:
   (**
