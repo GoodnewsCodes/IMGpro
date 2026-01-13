@@ -130,6 +130,46 @@ export function initImageManipulation() {
     reader.readAsDataURL(file);
   }
 
+  // Handle drag and drop on edit canvas to reset and upload new image
+  editCanvas.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    editCanvas.classList.add("drag-over");
+  });
+
+  editCanvas.addEventListener("dragleave", () => {
+    editCanvas.classList.remove("drag-over");
+  });
+
+  editCanvas.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    editCanvas.classList.remove("drag-over");
+
+    if (e.dataTransfer?.files.length) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        // Reset state
+        editResultWrapper?.classList.add("hidden");
+        editDownloadBtn?.classList.add("hidden");
+        editResultPreview.src = "";
+        editBuffer = null;
+        rotation = 0;
+        flipH = false;
+        flipV = false;
+        cropRect = { left: 0, top: 0, width: 0, height: 0 };
+        isCropping = false;
+        cropAspectRatio = "free";
+        cropShape = "rect";
+        if (cropAspectRatioSelect) cropAspectRatioSelect.value = "free";
+        if (cropShapeSelect) cropShapeSelect.value = "rect";
+
+        // Handle new file
+        handleEditFile(file);
+      }
+    }
+  });
+
   function resetEditState() {
     rotation = 0;
     flipH = false;

@@ -202,4 +202,38 @@ export function initOptimization() {
     };
     reader.readAsDataURL(file);
   }
+
+  // Handle drag and drop on original preview to reset and upload new image
+  originalPreview?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    originalPreview.classList.add("drag-over");
+  });
+
+  originalPreview?.addEventListener("dragleave", () => {
+    originalPreview.classList.remove("drag-over");
+  });
+
+  originalPreview?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    originalPreview.classList.remove("drag-over");
+
+    if (e.dataTransfer?.files.length) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        // Reset state
+        currentFile = null;
+        resultBuffer = null;
+        if (fileInput) fileInput.value = "";
+        if (downloadBtn) downloadBtn.classList.add("hidden");
+        if (resultPreview) resultPreview.src = "";
+        if (resultInfo) resultInfo.innerHTML = "";
+        if (resultWrapper) resultWrapper.classList.add("hidden");
+
+        // Handle new file
+        handleFile(file);
+      }
+    }
+  });
 }

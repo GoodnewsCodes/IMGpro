@@ -79,6 +79,42 @@ function initImageResizing() {
         };
         reader.readAsDataURL(file);
     }
+    // Handle drag and drop on original preview to reset and upload new image
+    originalPreview?.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        originalPreview.classList.add("drag-over");
+    });
+    originalPreview?.addEventListener("dragleave", () => {
+        originalPreview.classList.remove("drag-over");
+    });
+    originalPreview?.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        originalPreview.classList.remove("drag-over");
+        if (e.dataTransfer?.files.length) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith("image/")) {
+                // Reset state
+                currentFile = null;
+                convertedBuffer = null;
+                if (fileInput)
+                    fileInput.value = "";
+                if (originalPreview)
+                    originalPreview.src = "";
+                if (resultPreview)
+                    resultPreview.src = "";
+                if (originalInfo)
+                    originalInfo.textContent = "";
+                downloadBtn.classList.add("hidden");
+                resultWrapper?.classList.add("hidden");
+                widthInput.value = "";
+                heightInput.value = "";
+                // Handle new file
+                handleFile(file);
+            }
+        }
+    });
     // Aspect Ratio Logic
     widthInput.addEventListener("input", () => {
         if (lockAspectRatio.checked && originalWidth > 0) {

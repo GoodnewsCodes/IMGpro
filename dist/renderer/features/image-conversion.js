@@ -104,6 +104,36 @@ function initImageConversion() {
         };
         reader.readAsDataURL(file);
     }
+    // Handle drag and drop on original preview to reset and upload new image
+    originalPreview?.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        originalPreview.classList.add("drag-over");
+    });
+    originalPreview?.addEventListener("dragleave", () => {
+        originalPreview.classList.remove("drag-over");
+    });
+    originalPreview?.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        originalPreview.classList.remove("drag-over");
+        if (e.dataTransfer?.files.length) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith("image/")) {
+                // Reset state
+                currentFile = null;
+                convertedBuffer = null;
+                if (fileInput)
+                    fileInput.value = "";
+                if (resultPreview)
+                    resultPreview.src = "";
+                downloadBtn.classList.add("hidden");
+                resultWrapper?.classList.add("hidden");
+                // Handle new file
+                handleFile(file);
+            }
+        }
+    });
     // Process Logic
     processBtn.addEventListener("click", async () => {
         if (!currentFile)

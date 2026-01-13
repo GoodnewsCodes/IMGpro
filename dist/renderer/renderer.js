@@ -27442,6 +27442,30 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    originalPreview.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.add("drag-over");
+    });
+    originalPreview.addEventListener("dragleave", () => {
+      originalPreview.classList.remove("drag-over");
+    });
+    originalPreview.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          selectedFile = null;
+          processedBlob = null;
+          fileInput.value = "";
+          resultPreview.src = "";
+          downloadBtn.classList.add("hidden");
+          handleFile(file);
+        }
+      }
+    });
     processBtn.addEventListener("click", async () => {
       if (!selectedFile) return;
       try {
@@ -27737,6 +27761,31 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    originalPreview?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.add("drag-over");
+    });
+    originalPreview?.addEventListener("dragleave", () => {
+      originalPreview.classList.remove("drag-over");
+    });
+    originalPreview?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          currentFile = null;
+          convertedBuffer = null;
+          if (fileInput) fileInput.value = "";
+          if (resultPreview) resultPreview.src = "";
+          downloadBtn.classList.add("hidden");
+          resultWrapper?.classList.add("hidden");
+          handleFile(file);
+        }
+      }
+    });
     processBtn.addEventListener("click", async () => {
       if (!currentFile) return;
       loadingOverlay?.classList.remove("hidden");
@@ -27898,6 +27947,35 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    originalPreview?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.add("drag-over");
+    });
+    originalPreview?.addEventListener("dragleave", () => {
+      originalPreview.classList.remove("drag-over");
+    });
+    originalPreview?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          currentFile = null;
+          convertedBuffer = null;
+          if (fileInput) fileInput.value = "";
+          if (originalPreview) originalPreview.src = "";
+          if (resultPreview) resultPreview.src = "";
+          if (originalInfo) originalInfo.textContent = "";
+          downloadBtn.classList.add("hidden");
+          resultWrapper?.classList.add("hidden");
+          widthInput.value = "";
+          heightInput.value = "";
+          handleFile(file);
+        }
+      }
+    });
     widthInput.addEventListener("input", () => {
       if (lockAspectRatio.checked && originalWidth > 0) {
         const ratio = originalHeight / originalWidth;
@@ -28087,6 +28165,34 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    canvas.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      canvas.classList.add("drag-over");
+    });
+    canvas.addEventListener("dragleave", () => {
+      canvas.classList.remove("drag-over");
+    });
+    canvas.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      canvas.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          originalImage = null;
+          if (fileInput) fileInput.value = "";
+          if (resultPreview) resultPreview.src = "";
+          downloadBtn.classList.add("hidden");
+          resultWrapper?.classList.add("hidden");
+          if (pickedColorSwatch)
+            pickedColorSwatch.style.backgroundColor = "#000000";
+          if (pickedColorHex) pickedColorHex.value = "#000000";
+          pickedColor = { r: 0, g: 0, b: 0 };
+          handleFile(file);
+        }
+      }
+    });
     canvas.addEventListener("click", (e) => {
       if (!ctx || !originalImage) return;
       const rect = canvas.getBoundingClientRect();
@@ -28304,6 +28410,38 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    editCanvas.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      editCanvas.classList.add("drag-over");
+    });
+    editCanvas.addEventListener("dragleave", () => {
+      editCanvas.classList.remove("drag-over");
+    });
+    editCanvas.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      editCanvas.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          editResultWrapper?.classList.add("hidden");
+          editDownloadBtn?.classList.add("hidden");
+          editResultPreview.src = "";
+          editBuffer = null;
+          rotation = 0;
+          flipH = false;
+          flipV = false;
+          cropRect = { left: 0, top: 0, width: 0, height: 0 };
+          isCropping = false;
+          cropAspectRatio = "free";
+          cropShape = "rect";
+          if (cropAspectRatioSelect) cropAspectRatioSelect.value = "free";
+          if (cropShapeSelect) cropShapeSelect.value = "rect";
+          handleEditFile(file);
+        }
+      }
+    });
     function resetEditState() {
       rotation = 0;
       flipH = false;
@@ -28673,6 +28811,31 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    originalPreview.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.add("drag-over");
+    });
+    originalPreview.addEventListener("dragleave", () => {
+      originalPreview.classList.remove("drag-over");
+    });
+    originalPreview.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          currentFile = null;
+          generatedFiles = [];
+          fileInput.value = "";
+          faviconGrid.innerHTML = "";
+          downloadAllBtn.classList.add("hidden");
+          htmlContainer?.classList.add("hidden");
+          handleFile(file);
+        }
+      }
+    });
     async function generateFavicons(file) {
       faviconGrid.innerHTML = "";
       generatedFiles = [];
@@ -29041,6 +29204,32 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       };
       reader.readAsDataURL(file);
     }
+    originalPreview?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.add("drag-over");
+    });
+    originalPreview?.addEventListener("dragleave", () => {
+      originalPreview.classList.remove("drag-over");
+    });
+    originalPreview?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      originalPreview.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          currentFile = null;
+          resultBuffer = null;
+          if (fileInput) fileInput.value = "";
+          if (downloadBtn) downloadBtn.classList.add("hidden");
+          if (resultPreview) resultPreview.src = "";
+          if (resultInfo) resultInfo.innerHTML = "";
+          if (resultWrapper) resultWrapper.classList.add("hidden");
+          handleFile(file);
+        }
+      }
+    });
   }
 
   // src/renderer/features/onboarding.ts

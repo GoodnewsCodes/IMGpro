@@ -118,6 +118,44 @@ export function initColorTools() {
     reader.readAsDataURL(file);
   }
 
+  // Handle drag and drop on canvas to reset and upload new image
+  canvas.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    canvas.classList.add("drag-over");
+  });
+
+  canvas.addEventListener("dragleave", () => {
+    canvas.classList.remove("drag-over");
+  });
+
+  canvas.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    canvas.classList.remove("drag-over");
+
+    if (e.dataTransfer?.files.length) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        // Reset state
+        originalImage = null;
+        if (fileInput) fileInput.value = "";
+        if (resultPreview) resultPreview.src = "";
+        downloadBtn.classList.add("hidden");
+        resultWrapper?.classList.add("hidden");
+
+        // Reset picker display
+        if (pickedColorSwatch)
+          pickedColorSwatch.style.backgroundColor = "#000000";
+        if (pickedColorHex) pickedColorHex.value = "#000000";
+        pickedColor = { r: 0, g: 0, b: 0 };
+
+        // Handle new file
+        handleFile(file);
+      }
+    }
+  });
+
   // Color Picking Logic
   canvas.addEventListener("click", (e) => {
     if (!ctx || !originalImage) return;
