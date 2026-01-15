@@ -1,4 +1,16 @@
 import { getSettings } from "./settings";
+import JSZip from "jszip";
+
+interface ProcessedFile {
+  file: File;
+  id: string;
+  status: "pending" | "processing" | "success" | "error";
+  resultBlob?: Blob;
+  resultFormat?: string;
+  originalSize: number;
+  optimizedSize?: number;
+  error?: string;
+}
 
 export function initOptimization() {
   const fileInput = document.getElementById(
@@ -6,19 +18,22 @@ export function initOptimization() {
   ) as HTMLInputElement;
   const dropZone = document.getElementById("opt-drop-zone");
   const previewContainer = document.getElementById("opt-preview-container");
-  const originalPreview = document.getElementById(
-    "opt-original-preview"
-  ) as HTMLImageElement;
-  const originalInfo = document.getElementById("opt-original-info");
-  const resultPreview = document.getElementById(
-    "opt-result-preview"
-  ) as HTMLImageElement;
-  const resultInfo = document.getElementById("opt-result-info");
-  const resultWrapper = document.getElementById("opt-result-wrapper");
-  const loadingOverlay = document.getElementById("opt-loading-overlay");
-  const processBtn = document.getElementById("opt-process-btn");
-  const downloadBtn = document.getElementById("opt-download-btn");
-  const resetBtn = document.getElementById("opt-reset-btn");
+  const fileListContainer = document.getElementById(
+    "opt-file-list"
+  ) as HTMLDivElement;
+  const processBtn = document.getElementById(
+    "opt-process-btn"
+  ) as HTMLButtonElement;
+  const downloadBtn = document.getElementById(
+    "opt-download-btn"
+  ) as HTMLButtonElement;
+  const resetBtn = document.getElementById(
+    "opt-reset-btn"
+  ) as HTMLButtonElement;
+  const batchSummary = document.getElementById(
+    "opt-batch-summary"
+  ) as HTMLDivElement;
+
   const qualitySlider = document.getElementById(
     "opt-quality-slider"
   ) as HTMLInputElement;
@@ -30,8 +45,7 @@ export function initOptimization() {
     "opt-preset-select"
   ) as HTMLSelectElement;
 
-  let currentFile: File | null = null;
-  let resultBuffer: Uint8Array | null = null;
+  let files: ProcessedFile[] = [];
 
   function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return "0 Bytes";
@@ -66,13 +80,13 @@ export function initOptimization() {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
     if (e.dataTransfer?.files.length) {
-      handleFile(e.dataTransfer.files[0]);
+      handleFiles(Array.from(e.dataTransfer.files));
     }
   });
 
   fileInput?.addEventListener("change", (e) => {
     if (fileInput.files?.length) {
-      handleFile(fileInput.files[0]);
+      handleFiles(Array.from(fileInput.files));
     }
   });
 
@@ -81,159 +95,246 @@ export function initOptimization() {
     if (qualityValue) qualityValue.textContent = qualitySlider.value;
   });
 
-  // Process button
-  processBtn?.addEventListener("click", async () => {
-    if (!currentFile) return;
+  function handleFiles(newFiles: File[]) {
+    const imageFiles = newFiles.filter((file) =>
+      file.type.startsWith("image/")
+    );
 
-    if (loadingOverlay) loadingOverlay.classList.remove("hidden");
-    if (resultWrapper) resultWrapper.classList.remove("hidden");
-    if (resultInfo) resultInfo.textContent = "Optimizing...";
+    if (imageFiles.length === 0) {
+      alert("Please select image files.");
+      return;
+    }
 
-    try {
-      const arrayBuffer = await currentFile.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-      const quality = parseInt(qualitySlider.value);
-      const format = formatSelect.value || undefined;
-      const preset = (presetSelect.value as any) || "balanced";
+    const newProcessedFiles: ProcessedFile[] = imageFiles.map((file) => ({
+      file,
+      id: Math.random().toString(36).substring(7),
+      status: "pending",
+      originalSize: file.size,
+    }));
 
-      const result = await window.electronAPI.optimizeImage({
-        buffer,
-        format,
-        quality,
-        preset,
+    files = [...files, ...newProcessedFiles];
+    updateUI();
+
+    // Load default settings if first load
+    const settings = getSettings();
+    if (qualitySlider && files.length === newProcessedFiles.length) {
+      qualitySlider.value = settings.defaultQuality.toString();
+      if (qualityValue)
+        qualityValue.textContent = settings.defaultQuality.toString();
+    }
+  }
+
+  function updateUI() {
+    if (files.length > 0) {
+      previewContainer?.classList.remove("hidden");
+      dropZone?.classList.add("hidden");
+      renderFileList();
+      updateSummary();
+    } else {
+      previewContainer?.classList.add("hidden");
+      dropZone?.classList.remove("hidden");
+      fileInput.value = "";
+    }
+  }
+
+  function renderFileList() {
+    fileListContainer.innerHTML = "";
+    files.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "file-item";
+
+      let statusHtml = getStatusText(item);
+      if (item.status === "success" && item.optimizedSize) {
+        const saved = item.originalSize - item.optimizedSize;
+        const percentage = ((saved / item.originalSize) * 100).toFixed(1);
+        statusHtml = `<span style="color: var(--success)">-${percentage}% (${formatBytes(
+          saved
+        )})</span>`;
+      }
+
+      div.innerHTML = `
+        <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
+        <div class="file-info" title="${item.file.name}">${item.file.name}</div>
+        <div class="file-info" style="font-size: 0.7rem; color: var(--text-secondary)">${formatBytes(
+          item.originalSize
+        )}</div>
+        <div class="file-status ${item.status}">
+          ${statusHtml}
+        </div>
+        <button class="remove-file-btn" data-id="${item.id}">×</button>
+      `;
+
+      const removeBtn = div.querySelector(".remove-file-btn");
+      removeBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeFile(item.id);
       });
 
-      if (result.success && result.buffer) {
-        resultBuffer = result.buffer;
-        const targetFormat =
-          format || currentFile.name.split(".").pop() || "png";
-        const blob = new Blob([resultBuffer as any], {
-          type: `image/${targetFormat === "jpg" ? "jpeg" : targetFormat}`,
-        });
-        resultPreview.src = URL.createObjectURL(blob);
+      fileListContainer.appendChild(div);
+    });
 
-        if (resultInfo) {
-          const originalSize = currentFile.size;
-          const optimizedSize = resultBuffer.length;
-          const saved = originalSize - optimizedSize;
-          const percentage = ((saved / originalSize) * 100).toFixed(1);
+    const hasPending = files.some(
+      (f) => f.status === "pending" || f.status === "error"
+    );
+    const hasSuccess = files.some((f) => f.status === "success");
 
-          resultInfo.innerHTML = `
-            Optimized Size: <strong>${formatBytes(optimizedSize)}</strong><br>
-            <span style="color: var(--success, #10b981)">
-              Saved ${formatBytes(saved)} (${percentage}%)
-            </span>
-          `;
+    if (processBtn) processBtn.disabled = !hasPending;
+    if (hasSuccess) {
+      downloadBtn?.classList.remove("hidden");
+    } else {
+      downloadBtn?.classList.add("hidden");
+    }
+  }
+
+  function getStatusText(item: ProcessedFile) {
+    switch (item.status) {
+      case "pending":
+        return "Pending";
+      case "processing":
+        return "Optimizing...";
+      case "success":
+        return "Done";
+      case "error":
+        return "Error";
+      default:
+        return "";
+    }
+  }
+
+  function removeFile(id: string) {
+    files = files.filter((f) => f.id !== id);
+    updateUI();
+  }
+
+  function updateSummary() {
+    if (batchSummary) {
+      const total = files.length;
+      const success = files.filter((f) => f.status === "success").length;
+      if (total > 0) {
+        let savedText = "";
+        if (success > 0) {
+          const totalOriginal = files
+            .filter((f) => f.status === "success")
+            .reduce((acc, f) => acc + f.originalSize, 0);
+          const totalOptimized = files
+            .filter((f) => f.status === "success")
+            .reduce((acc, f) => acc + (f.optimizedSize || 0), 0);
+          const totalSaved = totalOriginal - totalOptimized;
+          savedText = ` | Saved ${formatBytes(totalSaved)}`;
         }
 
-        if (downloadBtn) downloadBtn.classList.remove("hidden");
+        batchSummary.textContent = `${success} / ${total} optimized${savedText}`;
+        batchSummary.classList.remove("hidden");
       } else {
-        alert("Optimization failed: " + result.error);
-        if (resultInfo) resultInfo.textContent = "Error: " + result.error;
+        batchSummary.classList.add("hidden");
       }
-    } catch (error) {
-      console.error(error);
-      alert("An error occurred during optimization.");
-      if (resultInfo) resultInfo.textContent = "An error occurred.";
-    } finally {
-      if (loadingOverlay) loadingOverlay.classList.add("hidden");
     }
+  }
+
+  // Process button
+  processBtn?.addEventListener("click", async () => {
+    const pendingFiles = files.filter(
+      (f) => f.status === "pending" || f.status === "error"
+    );
+    if (pendingFiles.length === 0) return;
+
+    if (processBtn) processBtn.disabled = true;
+    if (resetBtn) resetBtn.disabled = true;
+
+    const quality = parseInt(qualitySlider.value);
+    const format = formatSelect.value || undefined;
+    const preset = (presetSelect.value as any) || "balanced";
+
+    for (const item of pendingFiles) {
+      item.status = "processing";
+      renderFileList();
+
+      try {
+        const arrayBuffer = await item.file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+
+        const result = await window.electronAPI.optimizeImage({
+          buffer,
+          format,
+          quality,
+          preset,
+        });
+
+        if (result.success && result.buffer) {
+          item.optimizedSize = result.buffer.length;
+          const targetFormat =
+            format || item.file.name.split(".").pop() || "png";
+
+          const blob = new Blob([result.buffer as any], {
+            type: `image/${targetFormat === "jpg" ? "jpeg" : targetFormat}`,
+          });
+
+          item.resultBlob = blob;
+          item.resultFormat = targetFormat;
+          item.status = "success";
+        } else {
+          throw new Error(result.error || "Optimization failed");
+        }
+      } catch (error: any) {
+        console.error(error);
+        item.status = "error";
+        item.error = error.message;
+      }
+
+      renderFileList();
+      updateSummary();
+    }
+
+    if (processBtn) processBtn.disabled = false;
+    if (resetBtn) resetBtn.disabled = false;
   });
 
   // Download button
   downloadBtn?.addEventListener("click", async () => {
-    if (!resultBuffer) return;
+    const successFiles = files.filter(
+      (f) => f.status === "success" && f.resultBlob
+    );
+    if (successFiles.length === 0) return;
 
-    const format =
-      formatSelect.value || currentFile?.name.split(".").pop() || "png";
-    const defaultName = `optimized-${Date.now()}.${format}`;
+    if (successFiles.length === 1) {
+      const item = successFiles[0];
+      const defaultName = `optimized-${item.file.name.split(".")[0]}.${
+        item.resultFormat
+      }`;
+      const filePath = await window.electronAPI.selectSavePath(defaultName);
+      if (filePath && item.resultBlob) {
+        const arrayBuffer = await item.resultBlob.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        await window.electronAPI.saveFile({ filePath, buffer });
+      }
+    } else {
+      const zip = new JSZip();
+      const folder = zip.folder("optimized_images");
 
-    const filePath = await window.electronAPI.selectSavePath(defaultName);
-    if (filePath) {
-      const result = await window.electronAPI.saveFile({
-        filePath,
-        buffer: resultBuffer,
+      successFiles.forEach((item) => {
+        if (item.resultBlob) {
+          const name = `optimized-${item.file.name.split(".")[0]}.${
+            item.resultFormat
+          }`;
+          folder?.file(name, item.resultBlob);
+        }
       });
-      if (result.success) {
-        alert("File saved successfully!");
-      } else {
-        alert("Failed to save file: " + result.error);
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const defaultPath = "optimized_images.zip";
+      const savePath = await window.electronAPI.selectSavePath(defaultPath);
+
+      if (savePath) {
+        const arrayBuffer = await content.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        await window.electronAPI.saveFile({ filePath: savePath, buffer });
       }
     }
   });
 
   // Reset button
   resetBtn?.addEventListener("click", () => {
-    currentFile = null;
-    resultBuffer = null;
-    if (dropZone) dropZone.classList.remove("hidden");
-    if (previewContainer) previewContainer.classList.add("hidden");
-    if (fileInput) fileInput.value = "";
-    if (downloadBtn) downloadBtn.classList.add("hidden");
-    if (resultPreview) resultPreview.src = "";
-    if (resultInfo) resultInfo.innerHTML = "";
-  });
-
-  function handleFile(file: File) {
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
-      return;
-    }
-
-    currentFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (originalPreview) originalPreview.src = e.target?.result as string;
-      if (originalInfo) {
-        originalInfo.innerHTML = `Original Size: <strong>${formatBytes(
-          file.size
-        )}</strong>`;
-      }
-      if (dropZone) dropZone.classList.add("hidden");
-      if (previewContainer) previewContainer.classList.remove("hidden");
-
-      // Load default settings
-      const settings = getSettings();
-      if (qualitySlider) {
-        qualitySlider.value = settings.defaultQuality.toString();
-        if (qualityValue)
-          qualityValue.textContent = settings.defaultQuality.toString();
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-
-  // Handle drag and drop on original preview to reset and upload new image
-  originalPreview?.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    originalPreview.classList.add("drag-over");
-  });
-
-  originalPreview?.addEventListener("dragleave", () => {
-    originalPreview.classList.remove("drag-over");
-  });
-
-  originalPreview?.addEventListener("drop", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    originalPreview.classList.remove("drag-over");
-
-    if (e.dataTransfer?.files.length) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
-        // Reset state
-        currentFile = null;
-        resultBuffer = null;
-        if (fileInput) fileInput.value = "";
-        if (downloadBtn) downloadBtn.classList.add("hidden");
-        if (resultPreview) resultPreview.src = "";
-        if (resultInfo) resultInfo.innerHTML = "";
-        if (resultWrapper) resultWrapper.classList.add("hidden");
-
-        // Handle new file
-        handleFile(file);
-      }
-    }
+    files = [];
+    updateUI();
   });
 }

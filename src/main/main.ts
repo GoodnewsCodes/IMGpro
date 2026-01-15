@@ -26,6 +26,8 @@ function createWindow() {
     autoHideMenuBar: true,
   });
 
+  mainWindow.maximize();
+
   // Remove the menu bar
   // mainWindow.setMenu(null);
 

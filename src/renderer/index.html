@@ -139,7 +139,13 @@
             <p>Upload an image to remove its background automatically.</p>
 
             <div class="upload-container" id="drop-zone">
-              <input type="file" id="file-input" accept="image/*" hidden />
+              <input
+                type="file"
+                id="file-input"
+                accept="image/*"
+                multiple
+                hidden
+              />
               <div class="upload-box">
                 <div class="upload-icon"><i data-lucide="upload"></i></div>
                 <p>Drag & drop an image or <span>browse</span></p>
@@ -148,29 +154,17 @@
             </div>
 
             <div id="preview-container" class="hidden">
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original</h3>
-                  <img id="original-preview" src="" alt="Original" />
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="result-wrapper">
-                    <img id="result-preview" src="" alt="Result" />
-                    <div id="loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="loading-text">Processing...</p>
-                    </div>
-                  </div>
-                </div>
+              <div class="batch-summary hidden" id="batch-summary"></div>
+              <div id="file-list" class="file-list">
+                <!-- File items will be injected here -->
               </div>
 
               <div class="actions">
                 <button id="process-btn" class="btn primary">
-                  Remove Background
+                  Remove Background (All)
                 </button>
                 <button id="download-btn" class="btn secondary hidden">
-                  Download Result
+                  Download All (ZIP)
                 </button>
                 <p
                   id="remove-bg-api-hint"
@@ -200,7 +194,13 @@
             <p>Convert your images to different formats easily.</p>
 
             <div class="upload-container" id="conv-drop-zone">
-              <input type="file" id="conv-file-input" accept="image/*" hidden />
+              <input
+                type="file"
+                id="conv-file-input"
+                accept="image/*"
+                multiple
+                hidden
+              />
               <div class="upload-box">
                 <div class="upload-icon"><i data-lucide="upload"></i></div>
                 <p>Drag & drop an image or <span>browse</span></p>
@@ -240,29 +240,17 @@
                 </div>
               </div>
 
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original</h3>
-                  <img id="conv-original-preview" src="" alt="Original" />
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="conv-result-wrapper">
-                    <img id="conv-result-preview" src="" alt="Result" />
-                    <div id="conv-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="conv-loading-text">Converting...</p>
-                    </div>
-                  </div>
-                </div>
+              <div class="batch-summary hidden" id="conv-batch-summary"></div>
+              <div id="conv-file-list" class="file-list">
+                <!-- File items will be injected here -->
               </div>
 
               <div class="actions">
                 <button id="conv-process-btn" class="btn primary">
-                  Convert Image
+                  Convert Images (All)
                 </button>
                 <button id="conv-download-btn" class="btn secondary hidden">
-                  Download Result
+                  Download All (ZIP)
                 </button>
                 <button id="conv-reset-btn" class="btn ghost">Reset</button>
               </div>
@@ -636,10 +624,109 @@
                       <option value="rounded">Rounded Corners</option>
                       <option value="circle">Circle</option>
                     </select>
+
+                    <div class="divider" style="margin: 1rem 0"></div>
+
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
+                      Manifest Settings
+                    </h4>
+
+                    <div class="setting-group">
+                      <label for="manifest-name">App Name</label>
+                      <input
+                        type="text"
+                        id="manifest-name"
+                        class="text-input"
+                        placeholder="My App"
+                        style="width: 100%"
+                      />
+                    </div>
+
+                    <div class="setting-group">
+                      <label for="manifest-short-name">Short Name</label>
+                      <input
+                        type="text"
+                        id="manifest-short-name"
+                        class="text-input"
+                        placeholder="App"
+                        style="width: 100%"
+                      />
+                    </div>
+
+                    <div class="setting-group">
+                      <label for="manifest-description">Description</label>
+                      <textarea
+                        id="manifest-description"
+                        class="text-input"
+                        rows="3"
+                        style="width: 100%; resize: vertical"
+                        placeholder="App description..."
+                      ></textarea>
+                    </div>
+
+                    <div class="setting-group">
+                      <label>Theme Color</label>
+                      <div class="color-info-row">
+                        <input
+                          type="color"
+                          id="manifest-theme-color"
+                          value="#ffffff"
+                        />
+                        <input
+                          type="text"
+                          id="manifest-theme-color-hex"
+                          class="text-input"
+                          value="#ffffff"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="setting-group">
+                      <label>Background Color</label>
+                      <div class="color-info-row">
+                        <input
+                          type="color"
+                          id="manifest-bg-color"
+                          value="#ffffff"
+                        />
+                        <input
+                          type="text"
+                          id="manifest-bg-color-hex"
+                          class="text-input"
+                          value="#ffffff"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="setting-group">
+                      <label>Tile Color (Windows)</label>
+                      <div class="color-info-row">
+                        <input
+                          type="color"
+                          id="manifest-tile-color"
+                          value="#ffffff"
+                        />
+                        <input
+                          type="text"
+                          id="manifest-tile-color-hex"
+                          class="text-input"
+                          value="#ffffff"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      id="favicon-regenerate-btn"
+                      class="btn primary"
+                      style="width: 100%; margin-top: 1rem"
+                    >
+                      Regenerate Manifest
+                    </button>
+
                     <button
                       id="favicon-reset-btn"
                       class="btn ghost"
-                      style="width: 100%; margin-top: 1rem"
+                      style="width: 100%; margin-top: 0.5rem"
                     >
                       Reset
                     </button>
@@ -694,7 +781,13 @@
             </p>
 
             <div class="upload-container" id="opt-drop-zone">
-              <input type="file" id="opt-file-input" accept="image/*" hidden />
+              <input
+                type="file"
+                id="opt-file-input"
+                accept="image/*"
+                multiple
+                hidden
+              />
               <div class="upload-box">
                 <div class="upload-icon"><i data-lucide="upload"></i></div>
                 <p>Drag & drop an image or <span>browse</span></p>
@@ -708,18 +801,18 @@
                   <label for="opt-preset-select">Optimization Preset</label>
                   <select id="opt-preset-select" class="select-input">
                     <option value="balanced">Balanced (Recommended)</option>
-                    <option value="small">Small File Size (Web)</option>
-                    <option value="high">High Quality</option>
+                    <option value="small">Smallest Size (Lower Quality)</option>
+                    <option value="high">Highest Quality (Larger Size)</option>
                   </select>
                 </div>
                 <div class="setting-group">
                   <label for="opt-format-select">Output Format</label>
                   <select id="opt-format-select" class="select-input">
-                    <option value="">Keep Original Format</option>
-                    <option value="webp">WebP (Best for Web)</option>
-                    <option value="avif">AVIF (Next-Gen)</option>
+                    <option value="">Keep Original</option>
                     <option value="jpg">JPEG</option>
                     <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                    <option value="avif">AVIF</option>
                   </select>
                 </div>
                 <div class="setting-group">
@@ -737,31 +830,17 @@
                 </div>
               </div>
 
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original</h3>
-                  <img id="opt-original-preview" src="" alt="Original" />
-                  <div class="image-info" id="opt-original-info"></div>
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="opt-result-wrapper">
-                    <img id="opt-result-preview" src="" alt="Result" />
-                    <div id="opt-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="opt-loading-text">Optimizing...</p>
-                    </div>
-                  </div>
-                  <div class="image-info" id="opt-result-info"></div>
-                </div>
+              <div class="batch-summary hidden" id="opt-batch-summary"></div>
+              <div id="opt-file-list" class="file-list">
+                <!-- File items will be injected here -->
               </div>
 
               <div class="actions">
                 <button id="opt-process-btn" class="btn primary">
-                  Optimize Image
+                  Optimize Images (All)
                 </button>
                 <button id="opt-download-btn" class="btn secondary hidden">
-                  Download Result
+                  Download All (ZIP)
                 </button>
                 <button id="opt-reset-btn" class="btn ghost">Reset</button>
               </div>

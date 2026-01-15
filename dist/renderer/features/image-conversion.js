@@ -1,26 +1,27 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initImageConversion = initImageConversion;
 const settings_1 = require("./settings");
+const jszip_1 = __importDefault(require("jszip"));
 function initImageConversion() {
     const dropZone = document.getElementById("conv-drop-zone");
     const fileInput = document.getElementById("conv-file-input");
     const previewContainer = document.getElementById("conv-preview-container");
-    const originalPreview = document.getElementById("conv-original-preview");
-    const resultPreview = document.getElementById("conv-result-preview");
-    const resultWrapper = document.getElementById("conv-result-wrapper");
-    const loadingOverlay = document.getElementById("conv-loading-overlay");
+    const fileListContainer = document.getElementById("conv-file-list");
     const processBtn = document.getElementById("conv-process-btn");
     const downloadBtn = document.getElementById("conv-download-btn");
     const resetBtn = document.getElementById("conv-reset-btn");
+    const batchSummary = document.getElementById("conv-batch-summary");
     if (!dropZone || !fileInput || !processBtn)
         return;
     const formatSelect = document.getElementById("format-select");
     const qualitySlider = document.getElementById("quality-slider");
     const qualityValue = document.getElementById("quality-value");
     const qualityGroup = document.getElementById("quality-group");
-    let currentFile = null;
-    let convertedBuffer = null;
+    let files = [];
     // Apply default settings
     const settings = (0, settings_1.getSettings)();
     if (formatSelect)
@@ -31,18 +32,7 @@ function initImageConversion() {
             qualityValue.textContent = settings.defaultQuality.toString();
     }
     // Trigger visibility check
-    const initialFormat = formatSelect.value;
-    if (initialFormat === "png" ||
-        initialFormat === "gif" ||
-        initialFormat === "svg" ||
-        initialFormat === "icns") {
-        qualityGroup?.classList.add("hidden");
-    }
-    else {
-        qualityGroup?.classList.remove("hidden");
-    }
-    // Handle quality slider visibility
-    formatSelect.addEventListener("change", () => {
+    const checkQualityVisibility = () => {
         const format = formatSelect.value;
         if (format === "png" ||
             format === "gif" ||
@@ -53,7 +43,9 @@ function initImageConversion() {
         else {
             qualityGroup?.classList.remove("hidden");
         }
-    });
+    };
+    checkQualityVisibility();
+    formatSelect.addEventListener("change", checkQualityVisibility);
     qualitySlider.addEventListener("input", () => {
         if (qualityValue)
             qualityValue.textContent = qualitySlider.value;
@@ -69,7 +61,6 @@ function initImageConversion() {
         dropZone.classList.add("drag-over");
     });
     dropZone?.addEventListener("dragleave", (e) => {
-        // Only remove drag-over class if we're actually leaving the drop zone
         const relatedTarget = e.relatedTarget;
         if (!relatedTarget || !dropZone.contains(relatedTarget)) {
             dropZone.classList.remove("drag-over");
@@ -78,134 +69,185 @@ function initImageConversion() {
     dropZone?.addEventListener("drop", (e) => {
         e.preventDefault();
         dropZone.classList.remove("drag-over");
-        const files = e.dataTransfer?.files;
-        if (files && files.length > 0) {
-            handleFile(files[0]);
+        if (e.dataTransfer?.files.length) {
+            handleFiles(Array.from(e.dataTransfer.files));
         }
     });
     fileInput.addEventListener("change", () => {
-        if (fileInput.files && fileInput.files.length > 0) {
-            handleFile(fileInput.files[0]);
+        if (fileInput.files?.length) {
+            handleFiles(Array.from(fileInput.files));
         }
     });
-    function handleFile(file) {
-        if (!file.type.startsWith("image/")) {
-            alert("Please upload an image file.");
+    function handleFiles(newFiles) {
+        const imageFiles = newFiles.filter((file) => file.type.startsWith("image/"));
+        if (imageFiles.length === 0) {
+            alert("Please select image files.");
             return;
         }
-        currentFile = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (originalPreview) {
-                originalPreview.src = e.target?.result;
-                previewContainer?.classList.remove("hidden");
-                dropZone?.classList.add("hidden");
-            }
-        };
-        reader.readAsDataURL(file);
+        const newProcessedFiles = imageFiles.map((file) => ({
+            file,
+            id: Math.random().toString(36).substring(7),
+            status: "pending",
+        }));
+        files = [...files, ...newProcessedFiles];
+        updateUI();
     }
-    // Handle drag and drop on original preview to reset and upload new image
-    originalPreview?.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        originalPreview.classList.add("drag-over");
-    });
-    originalPreview?.addEventListener("dragleave", () => {
-        originalPreview.classList.remove("drag-over");
-    });
-    originalPreview?.addEventListener("drop", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        originalPreview.classList.remove("drag-over");
-        if (e.dataTransfer?.files.length) {
-            const file = e.dataTransfer.files[0];
-            if (file.type.startsWith("image/")) {
-                // Reset state
-                currentFile = null;
-                convertedBuffer = null;
-                if (fileInput)
-                    fileInput.value = "";
-                if (resultPreview)
-                    resultPreview.src = "";
-                downloadBtn.classList.add("hidden");
-                resultWrapper?.classList.add("hidden");
-                // Handle new file
-                handleFile(file);
-            }
+    function updateUI() {
+        if (files.length > 0) {
+            previewContainer?.classList.remove("hidden");
+            dropZone?.classList.add("hidden");
+            renderFileList();
+            updateSummary();
         }
-    });
-    // Process Logic
-    processBtn.addEventListener("click", async () => {
-        if (!currentFile)
-            return;
-        loadingOverlay?.classList.remove("hidden");
-        resultWrapper?.classList.remove("hidden");
-        processBtn.disabled = true;
-        try {
-            const arrayBuffer = await currentFile.arrayBuffer();
-            const buffer = new Uint8Array(arrayBuffer);
-            const format = formatSelect.value;
-            const quality = parseInt(qualitySlider.value);
-            const result = await window.electronAPI.convertImage({
-                buffer,
-                format,
-                quality,
+        else {
+            previewContainer?.classList.add("hidden");
+            dropZone?.classList.remove("hidden");
+            fileInput.value = "";
+        }
+    }
+    function renderFileList() {
+        fileListContainer.innerHTML = "";
+        files.forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "file-item";
+            div.innerHTML = `
+        <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
+        <div class="file-info" title="${item.file.name}">${item.file.name}</div>
+        <div class="file-status ${item.status}">
+          ${getStatusText(item)}
+        </div>
+        <button class="remove-file-btn" data-id="${item.id}">×</button>
+      `;
+            const removeBtn = div.querySelector(".remove-file-btn");
+            removeBtn?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                removeFile(item.id);
             });
-            if (result.success && result.buffer) {
-                convertedBuffer = result.buffer;
-                const blob = new Blob([result.buffer], {
-                    type: `image/${format}`,
-                });
-                const url = URL.createObjectURL(blob);
-                if (resultPreview) {
-                    resultPreview.src = url;
-                    downloadBtn.classList.remove("hidden");
-                }
+            fileListContainer.appendChild(div);
+        });
+        const hasPending = files.some((f) => f.status === "pending" || f.status === "error");
+        const hasSuccess = files.some((f) => f.status === "success");
+        processBtn.disabled = !hasPending;
+        if (hasSuccess) {
+            downloadBtn.classList.remove("hidden");
+        }
+        else {
+            downloadBtn.classList.add("hidden");
+        }
+    }
+    function getStatusText(item) {
+        switch (item.status) {
+            case "pending":
+                return "Pending";
+            case "processing":
+                return "Converting...";
+            case "success":
+                return "Done";
+            case "error":
+                return "Error";
+            default:
+                return "";
+        }
+    }
+    function removeFile(id) {
+        files = files.filter((f) => f.id !== id);
+        updateUI();
+    }
+    function updateSummary() {
+        if (batchSummary) {
+            const total = files.length;
+            const success = files.filter((f) => f.status === "success").length;
+            if (total > 0) {
+                batchSummary.textContent = `${success} / ${total} converted`;
+                batchSummary.classList.remove("hidden");
             }
             else {
-                alert("Conversion failed: " + result.error);
+                batchSummary.classList.add("hidden");
             }
         }
-        catch (error) {
-            console.error(error);
-            alert("An error occurred during conversion.");
-        }
-        finally {
-            loadingOverlay?.classList.add("hidden");
-            processBtn.disabled = false;
-        }
-    });
-    // Download/Save Logic
-    downloadBtn.addEventListener("click", async () => {
-        if (!convertedBuffer || !currentFile)
+    }
+    // Process Logic
+    processBtn.addEventListener("click", async () => {
+        const pendingFiles = files.filter((f) => f.status === "pending" || f.status === "error");
+        if (pendingFiles.length === 0)
             return;
+        processBtn.disabled = true;
+        resetBtn.disabled = true;
         const format = formatSelect.value;
-        const originalName = currentFile.name.split(".")[0];
-        const defaultPath = `${originalName}_converted.${format}`;
-        const savePath = await window.electronAPI.selectSavePath(defaultPath);
-        if (savePath) {
-            const result = await window.electronAPI.saveFile({
-                filePath: savePath,
-                buffer: convertedBuffer,
+        const quality = parseInt(qualitySlider.value);
+        for (const item of pendingFiles) {
+            item.status = "processing";
+            renderFileList();
+            try {
+                const arrayBuffer = await item.file.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                const result = await window.electronAPI.convertImage({
+                    buffer,
+                    format,
+                    quality,
+                });
+                if (result.success && result.buffer) {
+                    const blob = new Blob([result.buffer], {
+                        type: `image/${format}`,
+                    });
+                    item.resultBlob = blob;
+                    item.resultFormat = format;
+                    item.status = "success";
+                }
+                else {
+                    throw new Error(result.error || "Conversion failed");
+                }
+            }
+            catch (error) {
+                console.error(error);
+                item.status = "error";
+                item.error = error.message;
+            }
+            renderFileList();
+            updateSummary();
+        }
+        processBtn.disabled = false;
+        resetBtn.disabled = false;
+    });
+    // Download Logic
+    downloadBtn.addEventListener("click", async () => {
+        const successFiles = files.filter((f) => f.status === "success" && f.resultBlob);
+        if (successFiles.length === 0)
+            return;
+        if (successFiles.length === 1) {
+            const item = successFiles[0];
+            const originalName = item.file.name.split(".")[0];
+            const defaultPath = `${originalName}_converted.${item.resultFormat}`;
+            const savePath = await window.electronAPI.selectSavePath(defaultPath);
+            if (savePath && item.resultBlob) {
+                const arrayBuffer = await item.resultBlob.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                await window.electronAPI.saveFile({ filePath: savePath, buffer });
+            }
+        }
+        else {
+            const zip = new jszip_1.default();
+            const folder = zip.folder("converted_images");
+            successFiles.forEach((item) => {
+                if (item.resultBlob) {
+                    const originalName = item.file.name.split(".")[0];
+                    const name = `${originalName}.${item.resultFormat}`;
+                    folder?.file(name, item.resultBlob);
+                }
             });
-            if (!result.success) {
-                alert("Failed to save file: " + result.error);
+            const content = await zip.generateAsync({ type: "blob" });
+            const defaultPath = "converted_images.zip";
+            const savePath = await window.electronAPI.selectSavePath(defaultPath);
+            if (savePath) {
+                const arrayBuffer = await content.arrayBuffer();
+                const buffer = new Uint8Array(arrayBuffer);
+                await window.electronAPI.saveFile({ filePath: savePath, buffer });
             }
         }
     });
     // Reset Logic
     resetBtn.addEventListener("click", () => {
-        currentFile = null;
-        convertedBuffer = null;
-        if (fileInput)
-            fileInput.value = "";
-        if (originalPreview)
-            originalPreview.src = "";
-        if (resultPreview)
-            resultPreview.src = "";
-        previewContainer?.classList.add("hidden");
-        dropZone?.classList.remove("hidden");
-        downloadBtn.classList.add("hidden");
-        resultWrapper?.classList.add("hidden");
+        files = [];
+        updateUI();
     });
 }

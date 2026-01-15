@@ -11,11 +11,7 @@
 ## todo:
 
 1. [] smooth edging for image color replace
-2. [x] images dont stretch out viewport
-3. [x] dont want horizontal scrollbar, make everything always fits into the window
-4. [x] output maintains aspect ratio & quality as initial image
-5. [x] make sure favicon generator works
-6. [x] make sure optimization tools work
+2. []
 
 ## future:
 

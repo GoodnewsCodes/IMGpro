@@ -55,6 +55,7 @@ function createWindow() {
         backgroundColor: "#0f172a", // Slate 900
         autoHideMenuBar: true,
     });
+    mainWindow.maximize();
     // Remove the menu bar
     // mainWindow.setMenu(null);
     // Set headers for cross-origin isolation (required for SharedArrayBuffer)

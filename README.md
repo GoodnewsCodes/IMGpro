@@ -24,6 +24,12 @@ IMGpro is a feature-rich image processing tool that allows users to perform vari
 - **Image Optimization** - Compress and optimize images
 - **Theme Support** - Light and dark theme options
 
+## Security
+
+### API Key Storage
+
+The `remove.bg` API key is stored securely using Electron's `safeStorage` API. This ensures that the key is encrypted using the operating system's keychain/credentials manager and is not accessible to other applications or users without proper authorization.
+
 ## Technology Stack
 
 - **Framework**: Electron

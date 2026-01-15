@@ -27360,17 +27360,15 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
   }
 
   // src/renderer/features/bg-removal.ts
+  var import_jszip = __toESM(require_jszip_min());
   function initBgRemoval() {
     const fileInput = document.getElementById("file-input");
     const dropZone = document.getElementById("drop-zone");
     const previewContainer = document.getElementById(
       "preview-container"
     );
-    const originalPreview = document.getElementById(
-      "original-preview"
-    );
-    const resultPreview = document.getElementById(
-      "result-preview"
+    const fileListContainer = document.getElementById(
+      "file-list"
     );
     const processBtn = document.getElementById(
       "process-btn"
@@ -27379,21 +27377,17 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       "download-btn"
     );
     const resetBtn = document.getElementById("reset-btn");
-    const loadingOverlay = document.getElementById(
-      "loading-overlay"
-    );
-    const loadingText = document.getElementById(
-      "loading-text"
-    );
     const removeBgApiBtn = document.getElementById(
       "remove-bg-api-btn"
     );
     const removeBgApiHint = document.getElementById(
       "remove-bg-api-hint"
     );
-    let selectedFile = null;
-    let processedBlob = null;
-    if (!fileInput || !dropZone || !previewContainer || !originalPreview || !resultPreview || !processBtn || !downloadBtn || !resetBtn || !loadingOverlay || !loadingText || !removeBgApiBtn || !removeBgApiHint) {
+    const batchSummary = document.getElementById(
+      "batch-summary"
+    );
+    let files = [];
+    if (!fileInput || !dropZone || !previewContainer || !fileListContainer || !processBtn || !downloadBtn || !resetBtn || !removeBgApiBtn || !removeBgApiHint) {
       console.error("Background removal elements not found");
       return;
     }
@@ -27416,135 +27410,191 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       e.preventDefault();
       dropZone.classList.remove("active");
       if (e.dataTransfer?.files.length) {
-        handleFile(e.dataTransfer.files[0]);
+        handleFiles(Array.from(e.dataTransfer.files));
       }
     });
     fileInput.addEventListener("change", () => {
       if (fileInput.files?.length) {
-        handleFile(fileInput.files[0]);
+        handleFiles(Array.from(fileInput.files));
       }
     });
-    function handleFile(file) {
-      if (!file.type.startsWith("image/")) {
-        alert("Please select an image file.");
+    function handleFiles(newFiles) {
+      const imageFiles = newFiles.filter(
+        (file) => file.type.startsWith("image/")
+      );
+      if (imageFiles.length === 0) {
+        alert("Please select image files.");
         return;
       }
-      selectedFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        originalPreview.src = e.target?.result;
+      const newProcessedFiles = imageFiles.map((file) => ({
+        file,
+        id: Math.random().toString(36).substring(7),
+        status: "pending"
+      }));
+      files = [...files, ...newProcessedFiles];
+      updateUI();
+    }
+    function updateUI() {
+      if (files.length > 0) {
         previewContainer.classList.remove("hidden");
         dropZone.classList.add("hidden");
-        resultPreview.src = "";
-        downloadBtn.classList.add("hidden");
-        removeBgApiBtn.classList.remove("hidden");
-        if (removeBgApiHint) removeBgApiHint.classList.remove("hidden");
-      };
-      reader.readAsDataURL(file);
+        renderFileList();
+        updateSummary();
+      } else {
+        previewContainer.classList.add("hidden");
+        dropZone.classList.remove("hidden");
+        fileInput.value = "";
+      }
     }
-    originalPreview.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.add("drag-over");
-    });
-    originalPreview.addEventListener("dragleave", () => {
-      originalPreview.classList.remove("drag-over");
-    });
-    originalPreview.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.remove("drag-over");
-      if (e.dataTransfer?.files.length) {
-        const file = e.dataTransfer.files[0];
-        if (file.type.startsWith("image/")) {
-          selectedFile = null;
-          processedBlob = null;
-          fileInput.value = "";
-          resultPreview.src = "";
-          downloadBtn.classList.add("hidden");
-          handleFile(file);
+    function renderFileList() {
+      fileListContainer.innerHTML = "";
+      files.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "file-item";
+        div.innerHTML = `
+        <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
+        <div class="file-info" title="${item.file.name}">${item.file.name}</div>
+        <div class="file-status ${item.status}">
+          ${getStatusText(item)}
+        </div>
+        <button class="remove-file-btn" data-id="${item.id}">\xD7</button>
+      `;
+        const removeBtn = div.querySelector(".remove-file-btn");
+        removeBtn?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeFile(item.id);
+        });
+        fileListContainer.appendChild(div);
+      });
+      const hasPending = files.some(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      const hasSuccess = files.some((f) => f.status === "success");
+      processBtn.disabled = !hasPending;
+      removeBgApiBtn.disabled = !hasPending;
+      if (hasSuccess) {
+        downloadBtn.classList.remove("hidden");
+      } else {
+        downloadBtn.classList.add("hidden");
+      }
+    }
+    function getStatusText(item) {
+      switch (item.status) {
+        case "pending":
+          return "Pending";
+        case "processing":
+          return "Processing...";
+        case "success":
+          return "Done";
+        case "error":
+          return "Error";
+        default:
+          return "";
+      }
+    }
+    function removeFile(id3) {
+      files = files.filter((f) => f.id !== id3);
+      updateUI();
+    }
+    function updateSummary() {
+      if (batchSummary) {
+        const total = files.length;
+        const success = files.filter((f) => f.status === "success").length;
+        if (total > 0) {
+          batchSummary.textContent = `${success} / ${total} processed`;
+          batchSummary.classList.remove("hidden");
+        } else {
+          batchSummary.classList.add("hidden");
         }
       }
-    });
+    }
     processBtn.addEventListener("click", async () => {
-      if (!selectedFile) return;
-      try {
-        loadingOverlay.classList.remove("hidden");
-        processBtn.disabled = true;
-        loadingText.textContent = "Removing background (High Quality)...";
-        processedBlob = await removeBackground(selectedFile, {
-          model: "isnet",
-          output: {
-            format: "image/png",
-            type: "foreground"
-          }
-        });
-        const url = URL.createObjectURL(processedBlob);
-        resultPreview.src = url;
-        downloadBtn.classList.remove("hidden");
-        removeBgApiBtn.classList.remove("hidden");
-      } catch (error) {
-        console.error("Background removal failed:", error);
-        alert("Failed to remove background. Please try again.");
-      } finally {
-        loadingOverlay.classList.add("hidden");
-        processBtn.disabled = false;
-      }
+      await processFiles("local");
     });
     removeBgApiBtn.addEventListener("click", async () => {
-      if (!selectedFile) return;
-      try {
-        loadingOverlay.classList.remove("hidden");
-        processBtn.disabled = true;
-        removeBgApiBtn.disabled = true;
-        loadingText.textContent = "Removing background (remove.bg API)...";
-        const arrayBuffer = await selectedFile.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-        const result = await window.electronAPI.removeBgApi(buffer);
-        if (result.success && result.buffer) {
-          processedBlob = new Blob([result.buffer], { type: "image/png" });
-          const url = URL.createObjectURL(processedBlob);
-          resultPreview.src = url;
-          downloadBtn.classList.remove("hidden");
-        } else {
-          throw new Error(result.error || "API call failed");
-        }
-      } catch (error) {
-        console.error("remove.bg API failed:", error);
-        alert("Failed to remove background via API: " + error.message);
-      } finally {
-        loadingOverlay.classList.add("hidden");
-        processBtn.disabled = false;
-        removeBgApiBtn.disabled = false;
-      }
+      await processFiles("api");
     });
+    async function processFiles(mode) {
+      const pendingFiles = files.filter(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      if (pendingFiles.length === 0) return;
+      processBtn.disabled = true;
+      removeBgApiBtn.disabled = true;
+      resetBtn.disabled = true;
+      for (const item of pendingFiles) {
+        item.status = "processing";
+        renderFileList();
+        try {
+          let blob;
+          if (mode === "local") {
+            blob = await removeBackground(item.file, {
+              model: "isnet",
+              output: {
+                format: "image/png",
+                type: "foreground"
+              }
+            });
+          } else {
+            const arrayBuffer = await item.file.arrayBuffer();
+            const buffer = new Uint8Array(arrayBuffer);
+            const result = await window.electronAPI.removeBgApi(buffer);
+            if (result.success && result.buffer) {
+              blob = new Blob([result.buffer], { type: "image/png" });
+            } else {
+              throw new Error(result.error || "API call failed");
+            }
+          }
+          item.resultBlob = blob;
+          item.status = "success";
+        } catch (error) {
+          console.error(`Error processing ${item.file.name}:`, error);
+          item.status = "error";
+          item.error = error.message;
+        }
+        renderFileList();
+        updateSummary();
+      }
+      processBtn.disabled = false;
+      removeBgApiBtn.disabled = false;
+      resetBtn.disabled = false;
+    }
     downloadBtn.addEventListener("click", async () => {
-      if (!processedBlob || !selectedFile) return;
-      const defaultPath = `imgpro_${selectedFile.name.split(".")[0]}_no_bg.png`;
-      const savePath = await window.electronAPI.selectSavePath(defaultPath);
-      if (savePath) {
-        const arrayBuffer = await processedBlob.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-        const result = await window.electronAPI.saveFile({
-          filePath: savePath,
-          buffer
+      const successFiles = files.filter(
+        (f) => f.status === "success" && f.resultBlob
+      );
+      if (successFiles.length === 0) return;
+      if (successFiles.length === 1) {
+        const item = successFiles[0];
+        const defaultPath = `imgpro_${item.file.name.split(".")[0]}_no_bg.png`;
+        const savePath = await window.electronAPI.selectSavePath(defaultPath);
+        if (savePath && item.resultBlob) {
+          const arrayBuffer = await item.resultBlob.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath: savePath, buffer });
+        }
+      } else {
+        const zip = new import_jszip.default();
+        const folder = zip.folder("removed_backgrounds");
+        successFiles.forEach((item) => {
+          if (item.resultBlob) {
+            const name = `imgpro_${item.file.name.split(".")[0]}_no_bg.png`;
+            folder?.file(name, item.resultBlob);
+          }
         });
-        if (!result.success) {
-          alert("Failed to save file: " + result.error);
+        const content = await zip.generateAsync({ type: "blob" });
+        const defaultPath = "removed_backgrounds.zip";
+        const savePath = await window.electronAPI.selectSavePath(defaultPath);
+        if (savePath) {
+          const arrayBuffer = await content.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath: savePath, buffer });
         }
       }
     });
     resetBtn.addEventListener("click", () => {
-      selectedFile = null;
-      processedBlob = null;
-      fileInput.value = "";
-      originalPreview.src = "";
-      resultPreview.src = "";
-      previewContainer.classList.add("hidden");
-      dropZone.classList.remove("hidden");
-      downloadBtn.classList.add("hidden");
-      removeBgApiBtn.classList.add("hidden");
-      if (removeBgApiHint) removeBgApiHint.classList.add("hidden");
+      files = [];
+      updateUI();
     });
   }
 
@@ -27659,20 +27709,16 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
   }
 
   // src/renderer/features/image-conversion.ts
+  var import_jszip2 = __toESM(require_jszip_min());
   function initImageConversion() {
     const dropZone = document.getElementById("conv-drop-zone");
     const fileInput = document.getElementById(
       "conv-file-input"
     );
     const previewContainer = document.getElementById("conv-preview-container");
-    const originalPreview = document.getElementById(
-      "conv-original-preview"
+    const fileListContainer = document.getElementById(
+      "conv-file-list"
     );
-    const resultPreview = document.getElementById(
-      "conv-result-preview"
-    );
-    const resultWrapper = document.getElementById("conv-result-wrapper");
-    const loadingOverlay = document.getElementById("conv-loading-overlay");
     const processBtn = document.getElementById(
       "conv-process-btn"
     );
@@ -27681,6 +27727,9 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     );
     const resetBtn = document.getElementById(
       "conv-reset-btn"
+    );
+    const batchSummary = document.getElementById(
+      "conv-batch-summary"
     );
     if (!dropZone || !fileInput || !processBtn) return;
     const formatSelect = document.getElementById(
@@ -27691,8 +27740,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     );
     const qualityValue = document.getElementById("quality-value");
     const qualityGroup = document.getElementById("quality-group");
-    let currentFile = null;
-    let convertedBuffer = null;
+    let files = [];
     const settings = getSettings();
     if (formatSelect) formatSelect.value = settings.defaultFormat;
     if (qualitySlider) {
@@ -27700,20 +27748,16 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       if (qualityValue)
         qualityValue.textContent = settings.defaultQuality.toString();
     }
-    const initialFormat = formatSelect.value;
-    if (initialFormat === "png" || initialFormat === "gif" || initialFormat === "svg" || initialFormat === "icns") {
-      qualityGroup?.classList.add("hidden");
-    } else {
-      qualityGroup?.classList.remove("hidden");
-    }
-    formatSelect.addEventListener("change", () => {
+    const checkQualityVisibility = () => {
       const format = formatSelect.value;
       if (format === "png" || format === "gif" || format === "svg" || format === "icns") {
         qualityGroup?.classList.add("hidden");
       } else {
         qualityGroup?.classList.remove("hidden");
       }
-    });
+    };
+    checkQualityVisibility();
+    formatSelect.addEventListener("change", checkQualityVisibility);
     qualitySlider.addEventListener("input", () => {
       if (qualityValue) qualityValue.textContent = qualitySlider.value;
     });
@@ -27735,119 +27779,183 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     dropZone?.addEventListener("drop", (e) => {
       e.preventDefault();
       dropZone.classList.remove("drag-over");
-      const files = e.dataTransfer?.files;
-      if (files && files.length > 0) {
-        handleFile(files[0]);
+      if (e.dataTransfer?.files.length) {
+        handleFiles(Array.from(e.dataTransfer.files));
       }
     });
     fileInput.addEventListener("change", () => {
-      if (fileInput.files && fileInput.files.length > 0) {
-        handleFile(fileInput.files[0]);
+      if (fileInput.files?.length) {
+        handleFiles(Array.from(fileInput.files));
       }
     });
-    function handleFile(file) {
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload an image file.");
+    function handleFiles(newFiles) {
+      const imageFiles = newFiles.filter(
+        (file) => file.type.startsWith("image/")
+      );
+      if (imageFiles.length === 0) {
+        alert("Please select image files.");
         return;
       }
-      currentFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (originalPreview) {
-          originalPreview.src = e.target?.result;
-          previewContainer?.classList.remove("hidden");
-          dropZone?.classList.add("hidden");
-        }
-      };
-      reader.readAsDataURL(file);
+      const newProcessedFiles = imageFiles.map((file) => ({
+        file,
+        id: Math.random().toString(36).substring(7),
+        status: "pending"
+      }));
+      files = [...files, ...newProcessedFiles];
+      updateUI();
     }
-    originalPreview?.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.add("drag-over");
-    });
-    originalPreview?.addEventListener("dragleave", () => {
-      originalPreview.classList.remove("drag-over");
-    });
-    originalPreview?.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.remove("drag-over");
-      if (e.dataTransfer?.files.length) {
-        const file = e.dataTransfer.files[0];
-        if (file.type.startsWith("image/")) {
-          currentFile = null;
-          convertedBuffer = null;
-          if (fileInput) fileInput.value = "";
-          if (resultPreview) resultPreview.src = "";
-          downloadBtn.classList.add("hidden");
-          resultWrapper?.classList.add("hidden");
-          handleFile(file);
-        }
+    function updateUI() {
+      if (files.length > 0) {
+        previewContainer?.classList.remove("hidden");
+        dropZone?.classList.add("hidden");
+        renderFileList();
+        updateSummary();
+      } else {
+        previewContainer?.classList.add("hidden");
+        dropZone?.classList.remove("hidden");
+        fileInput.value = "";
       }
-    });
-    processBtn.addEventListener("click", async () => {
-      if (!currentFile) return;
-      loadingOverlay?.classList.remove("hidden");
-      resultWrapper?.classList.remove("hidden");
-      processBtn.disabled = true;
-      try {
-        const arrayBuffer = await currentFile.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-        const format = formatSelect.value;
-        const quality = parseInt(qualitySlider.value);
-        const result = await window.electronAPI.convertImage({
-          buffer,
-          format,
-          quality
+    }
+    function renderFileList() {
+      fileListContainer.innerHTML = "";
+      files.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "file-item";
+        div.innerHTML = `
+        <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
+        <div class="file-info" title="${item.file.name}">${item.file.name}</div>
+        <div class="file-status ${item.status}">
+          ${getStatusText(item)}
+        </div>
+        <button class="remove-file-btn" data-id="${item.id}">\xD7</button>
+      `;
+        const removeBtn = div.querySelector(".remove-file-btn");
+        removeBtn?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeFile(item.id);
         });
-        if (result.success && result.buffer) {
-          convertedBuffer = result.buffer;
-          const blob = new Blob([result.buffer], {
-            type: `image/${format}`
-          });
-          const url = URL.createObjectURL(blob);
-          if (resultPreview) {
-            resultPreview.src = url;
-            downloadBtn.classList.remove("hidden");
-          }
-        } else {
-          alert("Conversion failed: " + result.error);
-        }
-      } catch (error) {
-        console.error(error);
-        alert("An error occurred during conversion.");
-      } finally {
-        loadingOverlay?.classList.add("hidden");
-        processBtn.disabled = false;
+        fileListContainer.appendChild(div);
+      });
+      const hasPending = files.some(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      const hasSuccess = files.some((f) => f.status === "success");
+      processBtn.disabled = !hasPending;
+      if (hasSuccess) {
+        downloadBtn.classList.remove("hidden");
+      } else {
+        downloadBtn.classList.add("hidden");
       }
+    }
+    function getStatusText(item) {
+      switch (item.status) {
+        case "pending":
+          return "Pending";
+        case "processing":
+          return "Converting...";
+        case "success":
+          return "Done";
+        case "error":
+          return "Error";
+        default:
+          return "";
+      }
+    }
+    function removeFile(id3) {
+      files = files.filter((f) => f.id !== id3);
+      updateUI();
+    }
+    function updateSummary() {
+      if (batchSummary) {
+        const total = files.length;
+        const success = files.filter((f) => f.status === "success").length;
+        if (total > 0) {
+          batchSummary.textContent = `${success} / ${total} converted`;
+          batchSummary.classList.remove("hidden");
+        } else {
+          batchSummary.classList.add("hidden");
+        }
+      }
+    }
+    processBtn.addEventListener("click", async () => {
+      const pendingFiles = files.filter(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      if (pendingFiles.length === 0) return;
+      processBtn.disabled = true;
+      resetBtn.disabled = true;
+      const format = formatSelect.value;
+      const quality = parseInt(qualitySlider.value);
+      for (const item of pendingFiles) {
+        item.status = "processing";
+        renderFileList();
+        try {
+          const arrayBuffer = await item.file.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          const result = await window.electronAPI.convertImage({
+            buffer,
+            format,
+            quality
+          });
+          if (result.success && result.buffer) {
+            const blob = new Blob([result.buffer], {
+              type: `image/${format}`
+            });
+            item.resultBlob = blob;
+            item.resultFormat = format;
+            item.status = "success";
+          } else {
+            throw new Error(result.error || "Conversion failed");
+          }
+        } catch (error) {
+          console.error(error);
+          item.status = "error";
+          item.error = error.message;
+        }
+        renderFileList();
+        updateSummary();
+      }
+      processBtn.disabled = false;
+      resetBtn.disabled = false;
     });
     downloadBtn.addEventListener("click", async () => {
-      if (!convertedBuffer || !currentFile) return;
-      const format = formatSelect.value;
-      const originalName = currentFile.name.split(".")[0];
-      const defaultPath = `${originalName}_converted.${format}`;
-      const savePath = await window.electronAPI.selectSavePath(defaultPath);
-      if (savePath) {
-        const result = await window.electronAPI.saveFile({
-          filePath: savePath,
-          buffer: convertedBuffer
+      const successFiles = files.filter(
+        (f) => f.status === "success" && f.resultBlob
+      );
+      if (successFiles.length === 0) return;
+      if (successFiles.length === 1) {
+        const item = successFiles[0];
+        const originalName = item.file.name.split(".")[0];
+        const defaultPath = `${originalName}_converted.${item.resultFormat}`;
+        const savePath = await window.electronAPI.selectSavePath(defaultPath);
+        if (savePath && item.resultBlob) {
+          const arrayBuffer = await item.resultBlob.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath: savePath, buffer });
+        }
+      } else {
+        const zip = new import_jszip2.default();
+        const folder = zip.folder("converted_images");
+        successFiles.forEach((item) => {
+          if (item.resultBlob) {
+            const originalName = item.file.name.split(".")[0];
+            const name = `${originalName}.${item.resultFormat}`;
+            folder?.file(name, item.resultBlob);
+          }
         });
-        if (!result.success) {
-          alert("Failed to save file: " + result.error);
+        const content = await zip.generateAsync({ type: "blob" });
+        const defaultPath = "converted_images.zip";
+        const savePath = await window.electronAPI.selectSavePath(defaultPath);
+        if (savePath) {
+          const arrayBuffer = await content.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath: savePath, buffer });
         }
       }
     });
     resetBtn.addEventListener("click", () => {
-      currentFile = null;
-      convertedBuffer = null;
-      if (fileInput) fileInput.value = "";
-      if (originalPreview) originalPreview.src = "";
-      if (resultPreview) resultPreview.src = "";
-      previewContainer?.classList.add("hidden");
-      dropZone?.classList.remove("hidden");
-      downloadBtn.classList.add("hidden");
-      resultWrapper?.classList.add("hidden");
+      files = [];
+      updateUI();
     });
   }
 
@@ -28726,7 +28834,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
   }
 
   // src/renderer/features/favicon-generator.ts
-  var import_jszip = __toESM(require_jszip_min());
+  var import_jszip3 = __toESM(require_jszip_min());
   function initFaviconGenerator() {
     const dropZone = document.getElementById("favicon-drop-zone");
     const fileInput = document.getElementById(
@@ -28747,11 +28855,42 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const shapeSelect = document.getElementById(
       "favicon-shape"
     );
+    const manifestNameInput = document.getElementById(
+      "manifest-name"
+    );
+    const manifestShortNameInput = document.getElementById(
+      "manifest-short-name"
+    );
+    const manifestDescInput = document.getElementById(
+      "manifest-description"
+    );
+    const themeColorInput = document.getElementById(
+      "manifest-theme-color"
+    );
+    const themeColorHex = document.getElementById(
+      "manifest-theme-color-hex"
+    );
+    const bgColorInput = document.getElementById(
+      "manifest-bg-color"
+    );
+    const bgColorHex = document.getElementById(
+      "manifest-bg-color-hex"
+    );
+    const tileColorInput = document.getElementById(
+      "manifest-tile-color"
+    );
+    const tileColorHex = document.getElementById(
+      "manifest-tile-color-hex"
+    );
+    const regenerateBtn = document.getElementById(
+      "favicon-regenerate-btn"
+    );
     if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
       return;
     const FAVICON_CONFIG = [
       { name: "favicon-16x16.png", size: 16, type: "image/png" },
       { name: "favicon-32x32.png", size: 32, type: "image/png" },
+      { name: "favicon-48x48.png", size: 48, type: "image/png" },
       { name: "favicon-96x96.png", size: 96, type: "image/png" },
       { name: "apple-icon-152x152.png", size: 152, type: "image/png" },
       { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
@@ -28762,6 +28901,25 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const ICO_SIZES = [16, 32, 48];
     let currentFile = null;
     let generatedFiles = [];
+    function setupColorSync(picker, hex) {
+      if (!picker || !hex) return;
+      picker.addEventListener("input", () => {
+        hex.value = picker.value;
+      });
+      hex.addEventListener("input", () => {
+        if (/^#[0-9A-F]{6}$/i.test(hex.value)) {
+          picker.value = hex.value;
+        }
+      });
+      hex.addEventListener("blur", () => {
+        if (!/^#[0-9A-F]{6}$/i.test(hex.value)) {
+          hex.value = picker.value;
+        }
+      });
+    }
+    setupColorSync(themeColorInput, themeColorHex);
+    setupColorSync(bgColorInput, bgColorHex);
+    setupColorSync(tileColorInput, tileColorHex);
     dropZone.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => {
       const files = e.target.files;
@@ -28770,6 +28928,11 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       }
     });
     shapeSelect?.addEventListener("change", () => {
+      if (currentFile) {
+        generateFavicons(currentFile);
+      }
+    });
+    regenerateBtn?.addEventListener("click", () => {
       if (currentFile) {
         generateFavicons(currentFile);
       }
@@ -28807,6 +28970,11 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         originalPreview.src = e.target?.result;
         dropZone?.classList.add("hidden");
         previewContainer?.classList.remove("hidden");
+        if (!manifestNameInput.value) {
+          const name = file.name.split(".")[0];
+          manifestNameInput.value = name.charAt(0).toUpperCase() + name.slice(1);
+          manifestShortNameInput.value = name.charAt(0).toUpperCase() + name.slice(1);
+        }
         generateFavicons(file);
       };
       reader.readAsDataURL(file);
@@ -28894,9 +29062,9 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         console.error("Error generating favicon.ico:", error);
       }
       const manifest = {
-        name: "ETHEGEN - AI-Powered Cybersecurity Platform",
-        short_name: "ETHEGEN",
-        description: "Enterprise-grade cybersecurity platform with AI-powered threat detection and security operations",
+        name: manifestNameInput.value || "My App",
+        short_name: manifestShortNameInput.value || "App",
+        description: manifestDescInput.value || "My Application",
         icons: [
           {
             src: "/favicon-16x16.png",
@@ -28906,6 +29074,11 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
           {
             src: "/favicon-32x32.png",
             sizes: "32x32",
+            type: "image/png"
+          },
+          {
+            src: "/favicon-48x48.png",
+            sizes: "48x48",
             type: "image/png"
           },
           {
@@ -28926,8 +29099,8 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
             purpose: "any"
           }
         ],
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        theme_color: themeColorInput.value,
+        background_color: bgColorInput.value,
         display: "standalone",
         scope: "/",
         start_url: "/"
@@ -28980,12 +29153,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
 <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileColor" content="${tileColorInput.value}" />
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
-<meta name="theme-color" content="#ffffff" />`;
+<meta name="theme-color" content="${themeColorInput.value}" />`;
       htmlCode.textContent = snippet;
     }
     async function downloadBlob(blob, fileName) {
@@ -29004,7 +29178,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     }
     downloadAllBtn.addEventListener("click", async () => {
       if (generatedFiles.length === 0) return;
-      const zip = new import_jszip.default();
+      const zip = new import_jszip3.default();
       for (const file of generatedFiles) {
         zip.file(file.name, file.blob);
       }
@@ -29030,29 +29204,41 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       faviconGrid.innerHTML = "";
       downloadAllBtn.classList.add("hidden");
       htmlContainer?.classList.add("hidden");
+      manifestNameInput.value = "";
+      manifestShortNameInput.value = "";
+      manifestDescInput.value = "";
+      themeColorInput.value = "#ffffff";
+      themeColorHex.value = "#ffffff";
+      bgColorInput.value = "#ffffff";
+      bgColorHex.value = "#ffffff";
+      tileColorInput.value = "#ffffff";
+      tileColorHex.value = "#ffffff";
     });
   }
 
   // src/renderer/features/optimization.ts
+  var import_jszip4 = __toESM(require_jszip_min());
   function initOptimization() {
     const fileInput = document.getElementById(
       "opt-file-input"
     );
     const dropZone = document.getElementById("opt-drop-zone");
     const previewContainer = document.getElementById("opt-preview-container");
-    const originalPreview = document.getElementById(
-      "opt-original-preview"
+    const fileListContainer = document.getElementById(
+      "opt-file-list"
     );
-    const originalInfo = document.getElementById("opt-original-info");
-    const resultPreview = document.getElementById(
-      "opt-result-preview"
+    const processBtn = document.getElementById(
+      "opt-process-btn"
     );
-    const resultInfo = document.getElementById("opt-result-info");
-    const resultWrapper = document.getElementById("opt-result-wrapper");
-    const loadingOverlay = document.getElementById("opt-loading-overlay");
-    const processBtn = document.getElementById("opt-process-btn");
-    const downloadBtn = document.getElementById("opt-download-btn");
-    const resetBtn = document.getElementById("opt-reset-btn");
+    const downloadBtn = document.getElementById(
+      "opt-download-btn"
+    );
+    const resetBtn = document.getElementById(
+      "opt-reset-btn"
+    );
+    const batchSummary = document.getElementById(
+      "opt-batch-summary"
+    );
     const qualitySlider = document.getElementById(
       "opt-quality-slider"
     );
@@ -29063,8 +29249,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const presetSelect = document.getElementById(
       "opt-preset-select"
     );
-    let currentFile = null;
-    let resultBuffer = null;
+    let files = [];
     function formatBytes(bytes, decimals = 2) {
       if (bytes === 0) return "0 Bytes";
       const k = 1024;
@@ -29092,143 +29277,212 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       e.preventDefault();
       dropZone.classList.remove("drag-over");
       if (e.dataTransfer?.files.length) {
-        handleFile(e.dataTransfer.files[0]);
+        handleFiles(Array.from(e.dataTransfer.files));
       }
     });
     fileInput?.addEventListener("change", (e) => {
       if (fileInput.files?.length) {
-        handleFile(fileInput.files[0]);
+        handleFiles(Array.from(fileInput.files));
       }
     });
     qualitySlider?.addEventListener("input", () => {
       if (qualityValue) qualityValue.textContent = qualitySlider.value;
     });
-    processBtn?.addEventListener("click", async () => {
-      if (!currentFile) return;
-      if (loadingOverlay) loadingOverlay.classList.remove("hidden");
-      if (resultWrapper) resultWrapper.classList.remove("hidden");
-      if (resultInfo) resultInfo.textContent = "Optimizing...";
-      try {
-        const arrayBuffer = await currentFile.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-        const quality = parseInt(qualitySlider.value);
-        const format = formatSelect.value || void 0;
-        const preset = presetSelect.value || "balanced";
-        const result = await window.electronAPI.optimizeImage({
-          buffer,
-          format,
-          quality,
-          preset
-        });
-        if (result.success && result.buffer) {
-          resultBuffer = result.buffer;
-          const targetFormat = format || currentFile.name.split(".").pop() || "png";
-          const blob = new Blob([resultBuffer], {
-            type: `image/${targetFormat === "jpg" ? "jpeg" : targetFormat}`
-          });
-          resultPreview.src = URL.createObjectURL(blob);
-          if (resultInfo) {
-            const originalSize = currentFile.size;
-            const optimizedSize = resultBuffer.length;
-            const saved = originalSize - optimizedSize;
-            const percentage = (saved / originalSize * 100).toFixed(1);
-            resultInfo.innerHTML = `
-            Optimized Size: <strong>${formatBytes(optimizedSize)}</strong><br>
-            <span style="color: var(--success, #10b981)">
-              Saved ${formatBytes(saved)} (${percentage}%)
-            </span>
-          `;
-          }
-          if (downloadBtn) downloadBtn.classList.remove("hidden");
-        } else {
-          alert("Optimization failed: " + result.error);
-          if (resultInfo) resultInfo.textContent = "Error: " + result.error;
-        }
-      } catch (error) {
-        console.error(error);
-        alert("An error occurred during optimization.");
-        if (resultInfo) resultInfo.textContent = "An error occurred.";
-      } finally {
-        if (loadingOverlay) loadingOverlay.classList.add("hidden");
+    function handleFiles(newFiles) {
+      const imageFiles = newFiles.filter(
+        (file) => file.type.startsWith("image/")
+      );
+      if (imageFiles.length === 0) {
+        alert("Please select image files.");
+        return;
       }
+      const newProcessedFiles = imageFiles.map((file) => ({
+        file,
+        id: Math.random().toString(36).substring(7),
+        status: "pending",
+        originalSize: file.size
+      }));
+      files = [...files, ...newProcessedFiles];
+      updateUI();
+      const settings = getSettings();
+      if (qualitySlider && files.length === newProcessedFiles.length) {
+        qualitySlider.value = settings.defaultQuality.toString();
+        if (qualityValue)
+          qualityValue.textContent = settings.defaultQuality.toString();
+      }
+    }
+    function updateUI() {
+      if (files.length > 0) {
+        previewContainer?.classList.remove("hidden");
+        dropZone?.classList.add("hidden");
+        renderFileList();
+        updateSummary();
+      } else {
+        previewContainer?.classList.add("hidden");
+        dropZone?.classList.remove("hidden");
+        fileInput.value = "";
+      }
+    }
+    function renderFileList() {
+      fileListContainer.innerHTML = "";
+      files.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "file-item";
+        let statusHtml = getStatusText(item);
+        if (item.status === "success" && item.optimizedSize) {
+          const saved = item.originalSize - item.optimizedSize;
+          const percentage = (saved / item.originalSize * 100).toFixed(1);
+          statusHtml = `<span style="color: var(--success)">-${percentage}% (${formatBytes(
+            saved
+          )})</span>`;
+        }
+        div.innerHTML = `
+        <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
+        <div class="file-info" title="${item.file.name}">${item.file.name}</div>
+        <div class="file-info" style="font-size: 0.7rem; color: var(--text-secondary)">${formatBytes(
+          item.originalSize
+        )}</div>
+        <div class="file-status ${item.status}">
+          ${statusHtml}
+        </div>
+        <button class="remove-file-btn" data-id="${item.id}">\xD7</button>
+      `;
+        const removeBtn = div.querySelector(".remove-file-btn");
+        removeBtn?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeFile(item.id);
+        });
+        fileListContainer.appendChild(div);
+      });
+      const hasPending = files.some(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      const hasSuccess = files.some((f) => f.status === "success");
+      if (processBtn) processBtn.disabled = !hasPending;
+      if (hasSuccess) {
+        downloadBtn?.classList.remove("hidden");
+      } else {
+        downloadBtn?.classList.add("hidden");
+      }
+    }
+    function getStatusText(item) {
+      switch (item.status) {
+        case "pending":
+          return "Pending";
+        case "processing":
+          return "Optimizing...";
+        case "success":
+          return "Done";
+        case "error":
+          return "Error";
+        default:
+          return "";
+      }
+    }
+    function removeFile(id3) {
+      files = files.filter((f) => f.id !== id3);
+      updateUI();
+    }
+    function updateSummary() {
+      if (batchSummary) {
+        const total = files.length;
+        const success = files.filter((f) => f.status === "success").length;
+        if (total > 0) {
+          let savedText = "";
+          if (success > 0) {
+            const totalOriginal = files.filter((f) => f.status === "success").reduce((acc, f) => acc + f.originalSize, 0);
+            const totalOptimized = files.filter((f) => f.status === "success").reduce((acc, f) => acc + (f.optimizedSize || 0), 0);
+            const totalSaved = totalOriginal - totalOptimized;
+            savedText = ` | Saved ${formatBytes(totalSaved)}`;
+          }
+          batchSummary.textContent = `${success} / ${total} optimized${savedText}`;
+          batchSummary.classList.remove("hidden");
+        } else {
+          batchSummary.classList.add("hidden");
+        }
+      }
+    }
+    processBtn?.addEventListener("click", async () => {
+      const pendingFiles = files.filter(
+        (f) => f.status === "pending" || f.status === "error"
+      );
+      if (pendingFiles.length === 0) return;
+      if (processBtn) processBtn.disabled = true;
+      if (resetBtn) resetBtn.disabled = true;
+      const quality = parseInt(qualitySlider.value);
+      const format = formatSelect.value || void 0;
+      const preset = presetSelect.value || "balanced";
+      for (const item of pendingFiles) {
+        item.status = "processing";
+        renderFileList();
+        try {
+          const arrayBuffer = await item.file.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          const result = await window.electronAPI.optimizeImage({
+            buffer,
+            format,
+            quality,
+            preset
+          });
+          if (result.success && result.buffer) {
+            item.optimizedSize = result.buffer.length;
+            const targetFormat = format || item.file.name.split(".").pop() || "png";
+            const blob = new Blob([result.buffer], {
+              type: `image/${targetFormat === "jpg" ? "jpeg" : targetFormat}`
+            });
+            item.resultBlob = blob;
+            item.resultFormat = targetFormat;
+            item.status = "success";
+          } else {
+            throw new Error(result.error || "Optimization failed");
+          }
+        } catch (error) {
+          console.error(error);
+          item.status = "error";
+          item.error = error.message;
+        }
+        renderFileList();
+        updateSummary();
+      }
+      if (processBtn) processBtn.disabled = false;
+      if (resetBtn) resetBtn.disabled = false;
     });
     downloadBtn?.addEventListener("click", async () => {
-      if (!resultBuffer) return;
-      const format = formatSelect.value || currentFile?.name.split(".").pop() || "png";
-      const defaultName = `optimized-${Date.now()}.${format}`;
-      const filePath = await window.electronAPI.selectSavePath(defaultName);
-      if (filePath) {
-        const result = await window.electronAPI.saveFile({
-          filePath,
-          buffer: resultBuffer
+      const successFiles = files.filter(
+        (f) => f.status === "success" && f.resultBlob
+      );
+      if (successFiles.length === 0) return;
+      if (successFiles.length === 1) {
+        const item = successFiles[0];
+        const defaultName = `optimized-${item.file.name.split(".")[0]}.${item.resultFormat}`;
+        const filePath = await window.electronAPI.selectSavePath(defaultName);
+        if (filePath && item.resultBlob) {
+          const arrayBuffer = await item.resultBlob.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath, buffer });
+        }
+      } else {
+        const zip = new import_jszip4.default();
+        const folder = zip.folder("optimized_images");
+        successFiles.forEach((item) => {
+          if (item.resultBlob) {
+            const name = `optimized-${item.file.name.split(".")[0]}.${item.resultFormat}`;
+            folder?.file(name, item.resultBlob);
+          }
         });
-        if (result.success) {
-          alert("File saved successfully!");
-        } else {
-          alert("Failed to save file: " + result.error);
+        const content = await zip.generateAsync({ type: "blob" });
+        const defaultPath = "optimized_images.zip";
+        const savePath = await window.electronAPI.selectSavePath(defaultPath);
+        if (savePath) {
+          const arrayBuffer = await content.arrayBuffer();
+          const buffer = new Uint8Array(arrayBuffer);
+          await window.electronAPI.saveFile({ filePath: savePath, buffer });
         }
       }
     });
     resetBtn?.addEventListener("click", () => {
-      currentFile = null;
-      resultBuffer = null;
-      if (dropZone) dropZone.classList.remove("hidden");
-      if (previewContainer) previewContainer.classList.add("hidden");
-      if (fileInput) fileInput.value = "";
-      if (downloadBtn) downloadBtn.classList.add("hidden");
-      if (resultPreview) resultPreview.src = "";
-      if (resultInfo) resultInfo.innerHTML = "";
-    });
-    function handleFile(file) {
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload an image file.");
-        return;
-      }
-      currentFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (originalPreview) originalPreview.src = e.target?.result;
-        if (originalInfo) {
-          originalInfo.innerHTML = `Original Size: <strong>${formatBytes(
-            file.size
-          )}</strong>`;
-        }
-        if (dropZone) dropZone.classList.add("hidden");
-        if (previewContainer) previewContainer.classList.remove("hidden");
-        const settings = getSettings();
-        if (qualitySlider) {
-          qualitySlider.value = settings.defaultQuality.toString();
-          if (qualityValue)
-            qualityValue.textContent = settings.defaultQuality.toString();
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-    originalPreview?.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.add("drag-over");
-    });
-    originalPreview?.addEventListener("dragleave", () => {
-      originalPreview.classList.remove("drag-over");
-    });
-    originalPreview?.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      originalPreview.classList.remove("drag-over");
-      if (e.dataTransfer?.files.length) {
-        const file = e.dataTransfer.files[0];
-        if (file.type.startsWith("image/")) {
-          currentFile = null;
-          resultBuffer = null;
-          if (fileInput) fileInput.value = "";
-          if (downloadBtn) downloadBtn.classList.add("hidden");
-          if (resultPreview) resultPreview.src = "";
-          if (resultInfo) resultInfo.innerHTML = "";
-          if (resultWrapper) resultWrapper.classList.add("hidden");
-          handleFile(file);
-        }
-      }
+      files = [];
+      updateUI();
     });
   }
 

@@ -21,12 +21,49 @@ export function initFaviconGenerator() {
     "favicon-shape"
   ) as HTMLSelectElement;
 
+  // Manifest Inputs
+  const manifestNameInput = document.getElementById(
+    "manifest-name"
+  ) as HTMLInputElement;
+  const manifestShortNameInput = document.getElementById(
+    "manifest-short-name"
+  ) as HTMLInputElement;
+  const manifestDescInput = document.getElementById(
+    "manifest-description"
+  ) as HTMLTextAreaElement;
+
+  const themeColorInput = document.getElementById(
+    "manifest-theme-color"
+  ) as HTMLInputElement;
+  const themeColorHex = document.getElementById(
+    "manifest-theme-color-hex"
+  ) as HTMLInputElement;
+
+  const bgColorInput = document.getElementById(
+    "manifest-bg-color"
+  ) as HTMLInputElement;
+  const bgColorHex = document.getElementById(
+    "manifest-bg-color-hex"
+  ) as HTMLInputElement;
+
+  const tileColorInput = document.getElementById(
+    "manifest-tile-color"
+  ) as HTMLInputElement;
+  const tileColorHex = document.getElementById(
+    "manifest-tile-color-hex"
+  ) as HTMLInputElement;
+
+  const regenerateBtn = document.getElementById(
+    "favicon-regenerate-btn"
+  ) as HTMLButtonElement;
+
   if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
     return;
 
   const FAVICON_CONFIG = [
     { name: "favicon-16x16.png", size: 16, type: "image/png" },
     { name: "favicon-32x32.png", size: 32, type: "image/png" },
+    { name: "favicon-48x48.png", size: 48, type: "image/png" },
     { name: "favicon-96x96.png", size: 96, type: "image/png" },
     { name: "apple-icon-152x152.png", size: 152, type: "image/png" },
     { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
@@ -39,6 +76,31 @@ export function initFaviconGenerator() {
 
   let currentFile: File | null = null;
   let generatedFiles: { name: string; blob: Blob }[] = [];
+
+  // Sync Color Inputs
+  function setupColorSync(picker: HTMLInputElement, hex: HTMLInputElement) {
+    if (!picker || !hex) return;
+
+    picker.addEventListener("input", () => {
+      hex.value = picker.value;
+    });
+
+    hex.addEventListener("input", () => {
+      if (/^#[0-9A-F]{6}$/i.test(hex.value)) {
+        picker.value = hex.value;
+      }
+    });
+
+    hex.addEventListener("blur", () => {
+      if (!/^#[0-9A-F]{6}$/i.test(hex.value)) {
+        hex.value = picker.value;
+      }
+    });
+  }
+
+  setupColorSync(themeColorInput, themeColorHex);
+  setupColorSync(bgColorInput, bgColorHex);
+  setupColorSync(tileColorInput, tileColorHex);
 
   // Handle click to browse
   dropZone.addEventListener("click", () => fileInput.click());
@@ -53,6 +115,13 @@ export function initFaviconGenerator() {
 
   // Handle shape change
   shapeSelect?.addEventListener("change", () => {
+    if (currentFile) {
+      generateFavicons(currentFile);
+    }
+  });
+
+  // Handle regenerate
+  regenerateBtn?.addEventListener("click", () => {
     if (currentFile) {
       generateFavicons(currentFile);
     }
@@ -98,6 +167,15 @@ export function initFaviconGenerator() {
       originalPreview.src = e.target?.result as string;
       dropZone?.classList.add("hidden");
       previewContainer?.classList.remove("hidden");
+
+      // Set default name based on filename if empty
+      if (!manifestNameInput.value) {
+        const name = file.name.split(".")[0];
+        manifestNameInput.value = name.charAt(0).toUpperCase() + name.slice(1);
+        manifestShortNameInput.value =
+          name.charAt(0).toUpperCase() + name.slice(1);
+      }
+
       generateFavicons(file);
     };
     reader.readAsDataURL(file);
@@ -208,10 +286,9 @@ export function initFaviconGenerator() {
 
     // 3. Generate Web Manifest
     const manifest = {
-      name: "ETHEGEN - AI-Powered Cybersecurity Platform",
-      short_name: "ETHEGEN",
-      description:
-        "Enterprise-grade cybersecurity platform with AI-powered threat detection and security operations",
+      name: manifestNameInput.value || "My App",
+      short_name: manifestShortNameInput.value || "App",
+      description: manifestDescInput.value || "My Application",
       icons: [
         {
           src: "/favicon-16x16.png",
@@ -221,6 +298,11 @@ export function initFaviconGenerator() {
         {
           src: "/favicon-32x32.png",
           sizes: "32x32",
+          type: "image/png",
+        },
+        {
+          src: "/favicon-48x48.png",
+          sizes: "48x48",
           type: "image/png",
         },
         {
@@ -241,8 +323,8 @@ export function initFaviconGenerator() {
           purpose: "any",
         },
       ],
-      theme_color: "#ffffff",
-      background_color: "#ffffff",
+      theme_color: themeColorInput.value,
+      background_color: bgColorInput.value,
       display: "standalone",
       scope: "/",
       start_url: "/",
@@ -301,12 +383,13 @@ export function initFaviconGenerator() {
 <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-<meta name="msapplication-TileColor" content="#ffffff" />
+<meta name="msapplication-TileColor" content="${tileColorInput.value}" />
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
-<meta name="theme-color" content="#ffffff" />`;
+<meta name="theme-color" content="${themeColorInput.value}" />`;
     htmlCode.textContent = snippet;
   }
 
@@ -358,5 +441,16 @@ export function initFaviconGenerator() {
     faviconGrid.innerHTML = "";
     downloadAllBtn.classList.add("hidden");
     htmlContainer?.classList.add("hidden");
+
+    // Reset inputs
+    manifestNameInput.value = "";
+    manifestShortNameInput.value = "";
+    manifestDescInput.value = "";
+    themeColorInput.value = "#ffffff";
+    themeColorHex.value = "#ffffff";
+    bgColorInput.value = "#ffffff";
+    bgColorHex.value = "#ffffff";
+    tileColorInput.value = "#ffffff";
+    tileColorHex.value = "#ffffff";
   });
 }
