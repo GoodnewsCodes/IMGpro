@@ -17,6 +17,12 @@ function initBgRemoval() {
     const removeBgApiBtn = document.getElementById("remove-bg-api-btn");
     const removeBgApiHint = document.getElementById("remove-bg-api-hint");
     const batchSummary = document.getElementById("batch-summary");
+    // Single Preview Elements
+    const bgSinglePreview = document.getElementById("bg-single-preview");
+    const bgOriginalPreview = document.getElementById("bg-original-preview");
+    const bgResultPreview = document.getElementById("bg-result-preview");
+    const bgLoadingOverlay = document.getElementById("bg-loading-overlay");
+    const bgPlaceholderText = document.getElementById("bg-placeholder-text");
     let files = [];
     if (!fileInput ||
         !dropZone ||
@@ -77,6 +83,14 @@ function initBgRemoval() {
         if (files.length > 0) {
             previewContainer.classList.remove("hidden");
             dropZone.classList.add("hidden");
+            if (files.length === 1) {
+                bgSinglePreview.classList.remove("hidden");
+                fileListContainer.classList.add("hidden");
+            }
+            else {
+                bgSinglePreview.classList.add("hidden");
+                fileListContainer.classList.remove("hidden");
+            }
             renderFileList();
             updateSummary();
         }
@@ -106,6 +120,35 @@ function initBgRemoval() {
             });
             fileListContainer.appendChild(div);
         });
+        // Update single preview if applicable
+        if (files.length === 1) {
+            const item = files[0];
+            bgOriginalPreview.src = URL.createObjectURL(item.file);
+            if (item.status === "success" && item.resultBlob) {
+                bgResultPreview.src = URL.createObjectURL(item.resultBlob);
+                bgResultPreview.classList.remove("hidden");
+                bgLoadingOverlay.classList.add("hidden");
+                bgPlaceholderText.classList.add("hidden");
+            }
+            else if (item.status === "processing") {
+                bgResultPreview.classList.add("hidden");
+                bgLoadingOverlay.classList.remove("hidden");
+                bgPlaceholderText.classList.add("hidden");
+            }
+            else {
+                bgResultPreview.classList.add("hidden");
+                bgLoadingOverlay.classList.add("hidden");
+                bgPlaceholderText.classList.remove("hidden");
+                if (item.status === "error") {
+                    bgPlaceholderText.textContent =
+                        "Error: " + (item.error || "Unknown error");
+                }
+                else {
+                    bgPlaceholderText.textContent =
+                        'Click "Remove Background" to see result';
+                }
+            }
+        }
         // Update buttons
         const hasPending = files.some((f) => f.status === "pending" || f.status === "error");
         const hasSuccess = files.some((f) => f.status === "success");

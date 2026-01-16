@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>IMG Pro Desktop</title>
+    <title>IMG Pro</title>
     <link rel="stylesheet" href="style.css" />
     <!-- Favicon links -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -142,7 +142,7 @@
               <input
                 type="file"
                 id="file-input"
-                accept="image/*"
+                accept="image/png, image/jpeg, image/webp"
                 multiple
                 hidden
               />
@@ -155,6 +155,30 @@
 
             <div id="preview-container" class="hidden">
               <div class="batch-summary hidden" id="batch-summary"></div>
+
+              <!-- Single Image Preview -->
+              <div id="bg-single-preview" class="hidden">
+                <div class="preview-grid side-by-side">
+                  <div class="preview-item">
+                    <h3>Original</h3>
+                    <img id="bg-original-preview" src="" alt="Original" />
+                  </div>
+                  <div class="preview-item">
+                    <h3>Result</h3>
+                    <div id="bg-result-wrapper" class="canvas-wrapper">
+                      <img id="bg-result-preview" src="" alt="Result" />
+                      <div id="bg-loading-overlay" class="hidden">
+                        <div class="spinner"></div>
+                        <p>Processing...</p>
+                      </div>
+                      <div id="bg-placeholder-text" class="placeholder-text">
+                        Click "Remove Background" to see result
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div id="file-list" class="file-list">
                 <!-- File items will be injected here -->
               </div>
@@ -590,7 +614,7 @@
               <input
                 type="file"
                 id="favicon-file-input"
-                accept="image/*"
+                accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif, image/avif, image/tiff"
                 hidden
               />
               <div class="upload-box">
@@ -713,6 +737,33 @@
                           value="#ffffff"
                         />
                       </div>
+                    </div>
+
+                    <div class="divider" style="margin: 1rem 0"></div>
+
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
+                      Additional Files
+                    </h4>
+
+                    <div class="setting-group checkbox-group">
+                      <input type="checkbox" id="generate-sitemap" checked />
+                      <label for="generate-sitemap">Generate Sitemap</label>
+                    </div>
+
+                    <div class="setting-group checkbox-group">
+                      <input type="checkbox" id="generate-robots" checked />
+                      <label for="generate-robots">Generate Robots.txt</label>
+                    </div>
+
+                    <div class="setting-group checkbox-group">
+                      <input
+                        type="checkbox"
+                        id="generate-browserconfig"
+                        checked
+                      />
+                      <label for="generate-browserconfig"
+                        >Generate Browserconfig.xml</label
+                      >
                     </div>
 
                     <button

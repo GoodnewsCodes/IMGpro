@@ -27386,6 +27386,21 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const batchSummary = document.getElementById(
       "batch-summary"
     );
+    const bgSinglePreview = document.getElementById(
+      "bg-single-preview"
+    );
+    const bgOriginalPreview = document.getElementById(
+      "bg-original-preview"
+    );
+    const bgResultPreview = document.getElementById(
+      "bg-result-preview"
+    );
+    const bgLoadingOverlay = document.getElementById(
+      "bg-loading-overlay"
+    );
+    const bgPlaceholderText = document.getElementById(
+      "bg-placeholder-text"
+    );
     let files = [];
     if (!fileInput || !dropZone || !previewContainer || !fileListContainer || !processBtn || !downloadBtn || !resetBtn || !removeBgApiBtn || !removeBgApiHint) {
       console.error("Background removal elements not found");
@@ -27438,6 +27453,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       if (files.length > 0) {
         previewContainer.classList.remove("hidden");
         dropZone.classList.add("hidden");
+        if (files.length === 1) {
+          bgSinglePreview.classList.remove("hidden");
+          fileListContainer.classList.add("hidden");
+        } else {
+          bgSinglePreview.classList.add("hidden");
+          fileListContainer.classList.remove("hidden");
+        }
         renderFileList();
         updateSummary();
       } else {
@@ -27466,6 +27488,29 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         });
         fileListContainer.appendChild(div);
       });
+      if (files.length === 1) {
+        const item = files[0];
+        bgOriginalPreview.src = URL.createObjectURL(item.file);
+        if (item.status === "success" && item.resultBlob) {
+          bgResultPreview.src = URL.createObjectURL(item.resultBlob);
+          bgResultPreview.classList.remove("hidden");
+          bgLoadingOverlay.classList.add("hidden");
+          bgPlaceholderText.classList.add("hidden");
+        } else if (item.status === "processing") {
+          bgResultPreview.classList.add("hidden");
+          bgLoadingOverlay.classList.remove("hidden");
+          bgPlaceholderText.classList.add("hidden");
+        } else {
+          bgResultPreview.classList.add("hidden");
+          bgLoadingOverlay.classList.add("hidden");
+          bgPlaceholderText.classList.remove("hidden");
+          if (item.status === "error") {
+            bgPlaceholderText.textContent = "Error: " + (item.error || "Unknown error");
+          } else {
+            bgPlaceholderText.textContent = 'Click "Remove Background" to see result';
+          }
+        }
+      }
       const hasPending = files.some(
         (f) => f.status === "pending" || f.status === "error"
       );
@@ -28885,6 +28930,15 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     const regenerateBtn = document.getElementById(
       "favicon-regenerate-btn"
     );
+    const generateSitemapCheckbox = document.getElementById(
+      "generate-sitemap"
+    );
+    const generateRobotsCheckbox = document.getElementById(
+      "generate-robots"
+    );
+    const generateBrowserConfigCheckbox = document.getElementById(
+      "generate-browserconfig"
+    );
     if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
       return;
     const FAVICON_CONFIG = [
@@ -28896,7 +28950,10 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
       { name: "android-icon-192x192.png", size: 192, type: "image/png" },
       { name: "android-chrome-512x512.png", size: 512, type: "image/png" },
-      { name: "ms-icon-144x144.png", size: 144, type: "image/png" }
+      { name: "ms-icon-144x144.png", size: 144, type: "image/png" },
+      { name: "ms-icon-70x70.png", size: 70, type: "image/png" },
+      { name: "ms-icon-150x150.png", size: 150, type: "image/png" },
+      { name: "ms-icon-310x310.png", size: 310, type: "image/png" }
     ];
     const ICO_SIZES = [16, 32, 48];
     let currentFile = null;
@@ -29109,6 +29166,49 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
         type: "application/json"
       });
       generatedFiles.push({ name: "site.webmanifest", blob: manifestBlob });
+      if (generateSitemapCheckbox && generateSitemapCheckbox.checked) {
+        const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://www.example.com/</loc>
+    <lastmod>${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+        const sitemapBlob = new Blob([sitemapContent], {
+          type: "application/xml"
+        });
+        generatedFiles.push({ name: "sitemap.xml", blob: sitemapBlob });
+      }
+      if (generateRobotsCheckbox && generateRobotsCheckbox.checked) {
+        const robotsContent = `User-agent: *
+Allow: /
+
+Sitemap: http://www.example.com/sitemap.xml`;
+        const robotsBlob = new Blob([robotsContent], { type: "text/plain" });
+        generatedFiles.push({ name: "robots.txt", blob: robotsBlob });
+      }
+      if (generateBrowserConfigCheckbox && generateBrowserConfigCheckbox.checked) {
+        const browserConfigContent = `<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="/ms-icon-70x70.png"/>
+      <square150x150logo src="/ms-icon-150x150.png"/>
+      <square310x310logo src="/ms-icon-310x310.png"/>
+      <TileColor>${tileColorInput.value}</TileColor>
+    </tile>
+  </msapplication>
+</browserconfig>`;
+        const browserConfigBlob = new Blob([browserConfigContent], {
+          type: "application/xml"
+        });
+        generatedFiles.push({
+          name: "browserconfig.xml",
+          blob: browserConfigBlob
+        });
+      }
       if (generatedFiles.length > 0) {
         downloadAllBtn.classList.remove("hidden");
         updateHtmlSnippet();
@@ -29143,7 +29243,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     }
     function updateHtmlSnippet() {
       if (!htmlCode) return;
-      const snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
+      let snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 
@@ -29160,6 +29260,26 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
 <meta name="msapplication-TileColor" content="${tileColorInput.value}" />
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
 <meta name="theme-color" content="${themeColorInput.value}" />`;
+      if (generateBrowserConfigCheckbox && generateBrowserConfigCheckbox.checked) {
+        const lines = snippet.split("\n");
+        const themeColorIndex = lines.findIndex(
+          (line) => line.includes('name="theme-color"')
+        );
+        if (themeColorIndex !== -1) {
+          lines.splice(
+            themeColorIndex,
+            0,
+            `<meta name="msapplication-config" content="/browserconfig.xml" />`
+          );
+          snippet = lines.join("\n");
+        }
+      }
+      if (generateSitemapCheckbox && generateSitemapCheckbox.checked) {
+        snippet += `
+
+<!-- Sitemap Reference -->
+<link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />`;
+      }
       htmlCode.textContent = snippet;
     }
     async function downloadBlob(blob, fileName) {
@@ -29213,6 +29333,10 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       bgColorHex.value = "#ffffff";
       tileColorInput.value = "#ffffff";
       tileColorHex.value = "#ffffff";
+      if (generateSitemapCheckbox) generateSitemapCheckbox.checked = true;
+      if (generateRobotsCheckbox) generateRobotsCheckbox.checked = true;
+      if (generateBrowserConfigCheckbox)
+        generateBrowserConfigCheckbox.checked = true;
     });
   }
 

@@ -57,6 +57,16 @@ export function initFaviconGenerator() {
     "favicon-regenerate-btn"
   ) as HTMLButtonElement;
 
+  const generateSitemapCheckbox = document.getElementById(
+    "generate-sitemap"
+  ) as HTMLInputElement;
+  const generateRobotsCheckbox = document.getElementById(
+    "generate-robots"
+  ) as HTMLInputElement;
+  const generateBrowserConfigCheckbox = document.getElementById(
+    "generate-browserconfig"
+  ) as HTMLInputElement;
+
   if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
     return;
 
@@ -70,6 +80,9 @@ export function initFaviconGenerator() {
     { name: "android-icon-192x192.png", size: 192, type: "image/png" },
     { name: "android-chrome-512x512.png", size: 512, type: "image/png" },
     { name: "ms-icon-144x144.png", size: 144, type: "image/png" },
+    { name: "ms-icon-70x70.png", size: 70, type: "image/png" },
+    { name: "ms-icon-150x150.png", size: 150, type: "image/png" },
+    { name: "ms-icon-310x310.png", size: 310, type: "image/png" },
   ];
 
   const ICO_SIZES = [16, 32, 48];
@@ -156,8 +169,20 @@ export function initFaviconGenerator() {
   });
 
   async function handleFile(file: File) {
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/svg+xml",
+      "image/gif",
+      "image/avif",
+      "image/tiff",
+    ];
+
+    if (!validTypes.includes(file.type)) {
+      alert(
+        "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF."
+      );
       return;
     }
 
@@ -199,7 +224,17 @@ export function initFaviconGenerator() {
 
     if (e.dataTransfer?.files.length) {
       const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
+      const validTypes = [
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/svg+xml",
+        "image/gif",
+        "image/avif",
+        "image/tiff",
+      ];
+
+      if (validTypes.includes(file.type)) {
         // Reset state
         currentFile = null;
         generatedFiles = [];
@@ -210,6 +245,10 @@ export function initFaviconGenerator() {
 
         // Handle new file
         handleFile(file);
+      } else {
+        alert(
+          "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF."
+        );
       }
     }
   });
@@ -334,7 +373,59 @@ export function initFaviconGenerator() {
     });
     generatedFiles.push({ name: "site.webmanifest", blob: manifestBlob });
 
-    // 4. Update UI
+    // 4. Generate Sitemap
+    if (generateSitemapCheckbox && generateSitemapCheckbox.checked) {
+      const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://www.example.com/</loc>
+    <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+      const sitemapBlob = new Blob([sitemapContent], {
+        type: "application/xml",
+      });
+      generatedFiles.push({ name: "sitemap.xml", blob: sitemapBlob });
+    }
+
+    // 5. Generate Robots.txt
+    if (generateRobotsCheckbox && generateRobotsCheckbox.checked) {
+      const robotsContent = `User-agent: *
+Allow: /
+
+Sitemap: http://www.example.com/sitemap.xml`;
+      const robotsBlob = new Blob([robotsContent], { type: "text/plain" });
+      generatedFiles.push({ name: "robots.txt", blob: robotsBlob });
+    }
+
+    // 6. Generate browserconfig.xml
+    if (
+      generateBrowserConfigCheckbox &&
+      generateBrowserConfigCheckbox.checked
+    ) {
+      const browserConfigContent = `<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="/ms-icon-70x70.png"/>
+      <square150x150logo src="/ms-icon-150x150.png"/>
+      <square310x310logo src="/ms-icon-310x310.png"/>
+      <TileColor>${tileColorInput.value}</TileColor>
+    </tile>
+  </msapplication>
+</browserconfig>`;
+      const browserConfigBlob = new Blob([browserConfigContent], {
+        type: "application/xml",
+      });
+      generatedFiles.push({
+        name: "browserconfig.xml",
+        blob: browserConfigBlob,
+      });
+    }
+
+    // 7. Update UI
     if (generatedFiles.length > 0) {
       downloadAllBtn.classList.remove("hidden");
       updateHtmlSnippet();
@@ -373,7 +464,7 @@ export function initFaviconGenerator() {
 
   function updateHtmlSnippet() {
     if (!htmlCode) return;
-    const snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
+    let snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
 
@@ -390,6 +481,31 @@ export function initFaviconGenerator() {
 <meta name="msapplication-TileColor" content="${tileColorInput.value}" />
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
 <meta name="theme-color" content="${themeColorInput.value}" />`;
+
+    if (
+      generateBrowserConfigCheckbox &&
+      generateBrowserConfigCheckbox.checked
+    ) {
+      // Insert before theme-color if possible, or append.
+      // Re-constructing snippet to insert correctly.
+      const lines = snippet.split("\n");
+      // Find index of theme-color
+      const themeColorIndex = lines.findIndex((line) =>
+        line.includes('name="theme-color"')
+      );
+      if (themeColorIndex !== -1) {
+        lines.splice(
+          themeColorIndex,
+          0,
+          `<meta name="msapplication-config" content="/browserconfig.xml" />`
+        );
+        snippet = lines.join("\n");
+      }
+    }
+
+    if (generateSitemapCheckbox && generateSitemapCheckbox.checked) {
+      snippet += `\n\n<!-- Sitemap Reference -->\n<link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />`;
+    }
     htmlCode.textContent = snippet;
   }
 
@@ -452,5 +568,9 @@ export function initFaviconGenerator() {
     bgColorHex.value = "#ffffff";
     tileColorInput.value = "#ffffff";
     tileColorHex.value = "#ffffff";
+    if (generateSitemapCheckbox) generateSitemapCheckbox.checked = true;
+    if (generateRobotsCheckbox) generateRobotsCheckbox.checked = true;
+    if (generateBrowserConfigCheckbox)
+      generateBrowserConfigCheckbox.checked = true;
   });
 }
