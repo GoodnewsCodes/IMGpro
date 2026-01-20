@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "packageManager": "pnpm@10.26.1",
   "devDependencies": {
     "@types/jszip": "^3.4.1",

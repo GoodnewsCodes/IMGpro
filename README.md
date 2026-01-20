@@ -95,7 +95,7 @@ IMGpro/
 
 ## License
 
-ISC
+PolyForm Noncommercial License 1.0.0. See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
