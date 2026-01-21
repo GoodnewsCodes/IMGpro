@@ -65,7 +65,8 @@ function initBgRemoval() {
         }
     });
     function handleFiles(newFiles) {
-        const imageFiles = newFiles.filter((file) => file.type.startsWith("image/"));
+        const validTypes = ["image/png", "image/jpeg", "image/webp"];
+        const imageFiles = newFiles.filter((file) => validTypes.includes(file.type));
         if (imageFiles.length === 0) {
             alert("Please select image files.");
             return;
