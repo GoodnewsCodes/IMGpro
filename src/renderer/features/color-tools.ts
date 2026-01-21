@@ -1,7 +1,7 @@
 export function initColorTools() {
   const dropZone = document.getElementById("color-drop-zone");
   const fileInput = document.getElementById(
-    "color-file-input"
+    "color-file-input",
   ) as HTMLInputElement;
   const previewContainer = document.getElementById("color-preview-container");
   const canvas = document.getElementById("color-canvas") as HTMLCanvasElement;
@@ -9,34 +9,34 @@ export function initColorTools() {
 
   const pickedColorSwatch = document.getElementById("picked-color-swatch");
   const pickedColorHex = document.getElementById(
-    "picked-color-hex"
+    "picked-color-hex",
   ) as HTMLInputElement;
 
   const targetColorInput = document.getElementById(
-    "target-color-input"
+    "target-color-input",
   ) as HTMLInputElement;
   const targetColorHex = document.getElementById(
-    "target-color-hex"
+    "target-color-hex",
   ) as HTMLInputElement;
   const toleranceSlider = document.getElementById(
-    "tolerance-slider"
+    "tolerance-slider",
   ) as HTMLInputElement;
   const toleranceValue = document.getElementById("tolerance-value");
 
   const replaceBtn = document.getElementById(
-    "replace-color-btn"
+    "replace-color-btn",
   ) as HTMLButtonElement;
   const downloadBtn = document.getElementById(
-    "color-download-btn"
+    "color-download-btn",
   ) as HTMLButtonElement;
   const resetBtn = document.getElementById(
-    "color-reset-btn"
+    "color-reset-btn",
   ) as HTMLButtonElement;
 
   if (!dropZone || !fileInput || !canvas || !replaceBtn) return;
 
   const resultPreview = document.getElementById(
-    "color-result-preview"
+    "color-result-preview",
   ) as HTMLImageElement;
   const resultWrapper = document.getElementById("color-result-wrapper");
   const loadingOverlay = document.getElementById("color-loading-overlay");
@@ -212,14 +212,18 @@ export function initColorTools() {
         const tempCtx = tempCanvas.getContext("2d");
         if (!tempCtx || !originalImage) return;
 
+        const width = tempCanvas.width;
+        const height = tempCanvas.height;
+
         tempCtx.drawImage(originalImage, 0, 0);
-        const imageData = tempCtx.getImageData(
-          0,
-          0,
-          tempCanvas.width,
-          tempCanvas.height
-        );
+        const imageData = tempCtx.getImageData(0, 0, width, height);
         const data = imageData.data;
+
+        // 1. Create a replacement mask
+        const mask = new Float32Array(width * height);
+        const normalizedTolerance = (tolerance / 100) * 442;
+        const feather = 5;
+        const lowerBound = Math.max(0, normalizedTolerance - feather);
 
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i];
@@ -229,27 +233,47 @@ export function initColorTools() {
           const diff = Math.sqrt(
             Math.pow(r - pickedColor.r, 2) +
               Math.pow(g - pickedColor.g, 2) +
-              Math.pow(b - pickedColor.b, 2)
+              Math.pow(b - pickedColor.b, 2),
           );
 
-          // Max diff is sqrt(255^2 * 3) approx 441.67
-          // Normalize tolerance to this range (0-100 -> 0-442)
-          const normalizedTolerance = (tolerance / 100) * 442;
-
-          // Soft edge blending
-          const feather = 5; // Reduced from 20 to 5 to avoid fading on sharp images
-          const lowerBound = Math.max(0, normalizedTolerance - feather);
-
           if (diff <= normalizedTolerance) {
-            let alpha = 1; // 1 means full replacement
-
+            let alpha = 1;
             if (diff > lowerBound) {
-              // Linear fade out at the edge
               alpha =
                 1 - (diff - lowerBound) / (normalizedTolerance - lowerBound);
             }
+            mask[i / 4] = alpha;
+          } else {
+            mask[i / 4] = 0;
+          }
+        }
 
-            // Blend with original color
+        // 2. Apply spatial smoothing (Box Blur) to the mask
+        const smoothedMask = new Float32Array(width * height);
+        const radius = 1; // 3x3 box blur
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            let sum = 0;
+            let count = 0;
+            for (let dy = -radius; dy <= radius; dy++) {
+              for (let dx = -radius; dx <= radius; dx++) {
+                const nx = x + dx;
+                const ny = y + dy;
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                  sum += mask[ny * width + nx];
+                  count++;
+                }
+              }
+            }
+            smoothedMask[y * width + x] = sum / count;
+          }
+        }
+
+        // 3. Apply the smoothed mask to blend colors
+        for (let i = 0; i < data.length; i += 4) {
+          const alpha = smoothedMask[i / 4];
+          if (alpha > 0) {
             data[i] = targetRgb.r * alpha + data[i] * (1 - alpha);
             data[i + 1] = targetRgb.g * alpha + data[i + 1] * (1 - alpha);
             data[i + 2] = targetRgb.b * alpha + data[i + 2] * (1 - alpha);
@@ -274,7 +298,7 @@ export function initColorTools() {
     if (!resultPreview.src) return;
 
     const savePath = await window.electronAPI.selectSavePath(
-      "processed_image.png"
+      "processed_image.png",
     );
     if (savePath) {
       // Convert data URL to buffer

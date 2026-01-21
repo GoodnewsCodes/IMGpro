@@ -10,9 +10,8 @@
 
 ## todo:
 
-1. [] smooth edging for image color replace
-2. [] add sitemap & "<!-- Sitemap Reference -->
-<link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />" to favicon generation
+1. [x] smooth edging for image color replace
+2. []
 
 ## future:
 

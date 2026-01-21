@@ -3,81 +3,80 @@ import JSZip from "jszip";
 export function initFaviconGenerator() {
   const dropZone = document.getElementById("favicon-drop-zone");
   const fileInput = document.getElementById(
-    "favicon-file-input"
+    "favicon-file-input",
   ) as HTMLInputElement;
   const previewContainer = document.getElementById("favicon-preview-container");
   const originalPreview = document.getElementById(
-    "favicon-original-preview"
+    "favicon-original-preview",
   ) as HTMLImageElement;
   const faviconGrid = document.getElementById("favicon-grid");
   const resetBtn = document.getElementById("favicon-reset-btn");
   const downloadAllBtn = document.getElementById(
-    "favicon-download-all-btn"
+    "favicon-download-all-btn",
   ) as HTMLButtonElement;
   const htmlContainer = document.getElementById("favicon-html-container");
   const htmlCode = document.getElementById("favicon-html-code");
   const copyHtmlBtn = document.getElementById("favicon-copy-html-btn");
   const shapeSelect = document.getElementById(
-    "favicon-shape"
+    "favicon-shape",
   ) as HTMLSelectElement;
 
   // Manifest Inputs
   const manifestNameInput = document.getElementById(
-    "manifest-name"
+    "manifest-name",
   ) as HTMLInputElement;
   const manifestShortNameInput = document.getElementById(
-    "manifest-short-name"
+    "manifest-short-name",
   ) as HTMLInputElement;
   const manifestDescInput = document.getElementById(
-    "manifest-description"
+    "manifest-description",
   ) as HTMLTextAreaElement;
+  const manifestSiteUrlInput = document.getElementById(
+    "manifest-site-url",
+  ) as HTMLInputElement;
 
   const themeColorInput = document.getElementById(
-    "manifest-theme-color"
+    "manifest-theme-color",
   ) as HTMLInputElement;
   const themeColorHex = document.getElementById(
-    "manifest-theme-color-hex"
+    "manifest-theme-color-hex",
   ) as HTMLInputElement;
 
   const bgColorInput = document.getElementById(
-    "manifest-bg-color"
+    "manifest-bg-color",
   ) as HTMLInputElement;
   const bgColorHex = document.getElementById(
-    "manifest-bg-color-hex"
+    "manifest-bg-color-hex",
   ) as HTMLInputElement;
 
   const tileColorInput = document.getElementById(
-    "manifest-tile-color"
+    "manifest-tile-color",
   ) as HTMLInputElement;
   const tileColorHex = document.getElementById(
-    "manifest-tile-color-hex"
+    "manifest-tile-color-hex",
   ) as HTMLInputElement;
 
   const regenerateBtn = document.getElementById(
-    "favicon-regenerate-btn"
+    "favicon-regenerate-btn",
   ) as HTMLButtonElement;
 
   const generateSitemapCheckbox = document.getElementById(
-    "generate-sitemap"
+    "generate-sitemap",
   ) as HTMLInputElement;
   const generateRobotsCheckbox = document.getElementById(
-    "generate-robots"
+    "generate-robots",
   ) as HTMLInputElement;
   const generateBrowserConfigCheckbox = document.getElementById(
-    "generate-browserconfig"
+    "generate-browserconfig",
   ) as HTMLInputElement;
 
   if (!dropZone || !fileInput || !previewContainer || !faviconGrid || !resetBtn)
     return;
 
   const FAVICON_CONFIG = [
-    { name: "favicon-16x16.png", size: 16, type: "image/png" },
-    { name: "favicon-32x32.png", size: 32, type: "image/png" },
     { name: "favicon-48x48.png", size: 48, type: "image/png" },
-    { name: "favicon-96x96.png", size: 96, type: "image/png" },
-    { name: "apple-icon-152x152.png", size: 152, type: "image/png" },
     { name: "apple-icon-180x180.png", size: 180, type: "image/png" },
-    { name: "android-icon-192x192.png", size: 192, type: "image/png" },
+    { name: "android-chrome-192x192.png", size: 192, type: "image/png" },
     { name: "android-chrome-512x512.png", size: 512, type: "image/png" },
     { name: "ms-icon-144x144.png", size: 144, type: "image/png" },
     { name: "ms-icon-70x70.png", size: 70, type: "image/png" },
@@ -85,7 +84,7 @@ export function initFaviconGenerator() {
     { name: "ms-icon-310x310.png", size: 310, type: "image/png" },
   ];
 
-  const ICO_SIZES = [16, 32, 48];
+  const ICO_SIZES = [16, 32, 48]; // Google recommends 48x48 as a multiple of 48.
 
   let currentFile: File | null = null;
   let generatedFiles: { name: string; blob: Blob }[] = [];
@@ -181,7 +180,7 @@ export function initFaviconGenerator() {
 
     if (!validTypes.includes(file.type)) {
       alert(
-        "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF."
+        "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF.",
       );
       return;
     }
@@ -247,7 +246,7 @@ export function initFaviconGenerator() {
         handleFile(file);
       } else {
         alert(
-          "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF."
+          "Unsupported file format. Please upload PNG, JPG, WebP, SVG, GIF, AVIF, or TIFF.",
         );
       }
     }
@@ -330,30 +329,14 @@ export function initFaviconGenerator() {
       description: manifestDescInput.value || "My Application",
       icons: [
         {
-          src: "/favicon-16x16.png",
-          sizes: "16x16",
-          type: "image/png",
-        },
-        {
-          src: "/favicon-32x32.png",
-          sizes: "32x32",
-          type: "image/png",
-        },
-        {
           src: "/favicon-48x48.png",
           sizes: "48x48",
           type: "image/png",
         },
         {
-          src: "/favicon-96x96.png",
-          sizes: "96x96",
+          src: "/apple-icon-180x180.png",
+          sizes: "180x180",
           type: "image/png",
-        },
-        {
-          src: "/android-icon-192x192.png",
-          sizes: "192x192",
-          type: "image/png",
-          purpose: "any",
         },
         {
           src: "/android-chrome-512x512.png",
@@ -375,10 +358,13 @@ export function initFaviconGenerator() {
 
     // 4. Generate Sitemap
     if (generateSitemapCheckbox && generateSitemapCheckbox.checked) {
+      const siteUrl =
+        manifestSiteUrlInput.value.replace(/\/$/, "") ||
+        "http://www.example.com";
       const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://www.example.com/</loc>
+    <loc>${siteUrl}/</loc>
     <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
@@ -392,10 +378,13 @@ export function initFaviconGenerator() {
 
     // 5. Generate Robots.txt
     if (generateRobotsCheckbox && generateRobotsCheckbox.checked) {
+      const siteUrl =
+        manifestSiteUrlInput.value.replace(/\/$/, "") ||
+        "http://www.example.com";
       const robotsContent = `User-agent: *
 Allow: /
 
-Sitemap: http://www.example.com/sitemap.xml`;
+Sitemap: ${siteUrl}/sitemap.xml`;
       const robotsBlob = new Blob([robotsContent], { type: "text/plain" });
       generatedFiles.push({ name: "robots.txt", blob: robotsBlob });
     }
@@ -466,18 +455,10 @@ Sitemap: http://www.example.com/sitemap.xml`;
     if (!htmlCode) return;
     let snippet = `<!-- Favicon and Icons - Multiple formats for maximum compatibility -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
 <link rel="manifest" href="/site.webmanifest" />
-
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 <meta name="msapplication-TileColor" content="${tileColorInput.value}" />
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
 <meta name="theme-color" content="${themeColorInput.value}" />`;
@@ -491,13 +472,13 @@ Sitemap: http://www.example.com/sitemap.xml`;
       const lines = snippet.split("\n");
       // Find index of theme-color
       const themeColorIndex = lines.findIndex((line) =>
-        line.includes('name="theme-color"')
+        line.includes('name="theme-color"'),
       );
       if (themeColorIndex !== -1) {
         lines.splice(
           themeColorIndex,
           0,
-          `<meta name="msapplication-config" content="/browserconfig.xml" />`
+          `<meta name="msapplication-config" content="/browserconfig.xml" />`,
         );
         snippet = lines.join("\n");
       }
@@ -562,6 +543,7 @@ Sitemap: http://www.example.com/sitemap.xml`;
     manifestNameInput.value = "";
     manifestShortNameInput.value = "";
     manifestDescInput.value = "";
+    manifestSiteUrlInput.value = "";
     themeColorInput.value = "#ffffff";
     themeColorHex.value = "#ffffff";
     bgColorInput.value = "#ffffff";
