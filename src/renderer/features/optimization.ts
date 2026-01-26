@@ -14,35 +14,35 @@ interface ProcessedFile {
 
 export function initOptimization() {
   const fileInput = document.getElementById(
-    "opt-file-input"
+    "opt-file-input",
   ) as HTMLInputElement;
   const dropZone = document.getElementById("opt-drop-zone");
   const previewContainer = document.getElementById("opt-preview-container");
   const fileListContainer = document.getElementById(
-    "opt-file-list"
+    "opt-file-list",
   ) as HTMLDivElement;
   const processBtn = document.getElementById(
-    "opt-process-btn"
+    "opt-process-btn",
   ) as HTMLButtonElement;
   const downloadBtn = document.getElementById(
-    "opt-download-btn"
+    "opt-download-btn",
   ) as HTMLButtonElement;
   const resetBtn = document.getElementById(
-    "opt-reset-btn"
+    "opt-reset-btn",
   ) as HTMLButtonElement;
   const batchSummary = document.getElementById(
-    "opt-batch-summary"
+    "opt-batch-summary",
   ) as HTMLDivElement;
 
   const qualitySlider = document.getElementById(
-    "opt-quality-slider"
+    "opt-quality-slider",
   ) as HTMLInputElement;
   const qualityValue = document.getElementById("opt-quality-value");
   const formatSelect = document.getElementById(
-    "opt-format-select"
+    "opt-format-select",
   ) as HTMLSelectElement;
   const presetSelect = document.getElementById(
-    "opt-preset-select"
+    "opt-preset-select",
   ) as HTMLSelectElement;
 
   let files: ProcessedFile[] = [];
@@ -97,7 +97,7 @@ export function initOptimization() {
 
   function handleFiles(newFiles: File[]) {
     const imageFiles = newFiles.filter((file) =>
-      file.type.startsWith("image/")
+      file.type.startsWith("image/"),
     );
 
     if (imageFiles.length === 0) {
@@ -148,7 +148,7 @@ export function initOptimization() {
         const saved = item.originalSize - item.optimizedSize;
         const percentage = ((saved / item.originalSize) * 100).toFixed(1);
         statusHtml = `<span style="color: var(--success)">-${percentage}% (${formatBytes(
-          saved
+          saved,
         )})</span>`;
       }
 
@@ -156,7 +156,7 @@ export function initOptimization() {
         <img src="${URL.createObjectURL(item.file)}" class="file-preview" />
         <div class="file-info" title="${item.file.name}">${item.file.name}</div>
         <div class="file-info" style="font-size: 0.7rem; color: var(--text-secondary)">${formatBytes(
-          item.originalSize
+          item.originalSize,
         )}</div>
         <div class="file-status ${item.status}">
           ${statusHtml}
@@ -174,11 +174,20 @@ export function initOptimization() {
     });
 
     const hasPending = files.some(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
     const hasSuccess = files.some((f) => f.status === "success");
 
     if (processBtn) processBtn.disabled = !hasPending;
+
+    if (files.length === 1) {
+      if (processBtn) processBtn.textContent = "Optimize Image";
+      if (downloadBtn) downloadBtn.textContent = "Download Result";
+    } else {
+      if (processBtn) processBtn.textContent = "Optimize Images (All)";
+      if (downloadBtn) downloadBtn.textContent = "Download All (ZIP)";
+    }
+
     if (hasSuccess) {
       downloadBtn?.classList.remove("hidden");
     } else {
@@ -234,7 +243,7 @@ export function initOptimization() {
   // Process button
   processBtn?.addEventListener("click", async () => {
     const pendingFiles = files.filter(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
     if (pendingFiles.length === 0) return;
 
@@ -292,7 +301,7 @@ export function initOptimization() {
   // Download button
   downloadBtn?.addEventListener("click", async () => {
     const successFiles = files.filter(
-      (f) => f.status === "success" && f.resultBlob
+      (f) => f.status === "success" && f.resultBlob,
     );
     if (successFiles.length === 0) return;
 

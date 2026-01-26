@@ -13,32 +13,32 @@ interface ProcessedFile {
 export function initImageConversion() {
   const dropZone = document.getElementById("conv-drop-zone");
   const fileInput = document.getElementById(
-    "conv-file-input"
+    "conv-file-input",
   ) as HTMLInputElement;
   const previewContainer = document.getElementById("conv-preview-container");
   const fileListContainer = document.getElementById(
-    "conv-file-list"
+    "conv-file-list",
   ) as HTMLDivElement;
   const processBtn = document.getElementById(
-    "conv-process-btn"
+    "conv-process-btn",
   ) as HTMLButtonElement;
   const downloadBtn = document.getElementById(
-    "conv-download-btn"
+    "conv-download-btn",
   ) as HTMLButtonElement;
   const resetBtn = document.getElementById(
-    "conv-reset-btn"
+    "conv-reset-btn",
   ) as HTMLButtonElement;
   const batchSummary = document.getElementById(
-    "conv-batch-summary"
+    "conv-batch-summary",
   ) as HTMLDivElement;
 
   if (!dropZone || !fileInput || !processBtn) return;
 
   const formatSelect = document.getElementById(
-    "format-select"
+    "format-select",
   ) as HTMLSelectElement;
   const qualitySlider = document.getElementById(
-    "quality-slider"
+    "quality-slider",
   ) as HTMLInputElement;
   const qualityValue = document.getElementById("quality-value");
   const qualityGroup = document.getElementById("quality-group");
@@ -112,7 +112,7 @@ export function initImageConversion() {
 
   function handleFiles(newFiles: File[]) {
     const imageFiles = newFiles.filter((file) =>
-      file.type.startsWith("image/")
+      file.type.startsWith("image/"),
     );
 
     if (imageFiles.length === 0) {
@@ -167,11 +167,20 @@ export function initImageConversion() {
     });
 
     const hasPending = files.some(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
     const hasSuccess = files.some((f) => f.status === "success");
 
     processBtn.disabled = !hasPending;
+
+    if (files.length === 1) {
+      processBtn.textContent = "Convert Image";
+      downloadBtn.textContent = "Download Result";
+    } else {
+      processBtn.textContent = "Convert Images (All)";
+      downloadBtn.textContent = "Download All (ZIP)";
+    }
+
     if (hasSuccess) {
       downloadBtn.classList.remove("hidden");
     } else {
@@ -215,7 +224,7 @@ export function initImageConversion() {
   // Process Logic
   processBtn.addEventListener("click", async () => {
     const pendingFiles = files.filter(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
     if (pendingFiles.length === 0) return;
 
@@ -266,7 +275,7 @@ export function initImageConversion() {
   // Download Logic
   downloadBtn.addEventListener("click", async () => {
     const successFiles = files.filter(
-      (f) => f.status === "success" && f.resultBlob
+      (f) => f.status === "success" && f.resultBlob,
     );
     if (successFiles.length === 0) return;
 

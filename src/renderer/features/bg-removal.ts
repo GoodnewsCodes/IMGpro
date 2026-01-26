@@ -13,43 +13,43 @@ export function initBgRemoval() {
   const fileInput = document.getElementById("file-input") as HTMLInputElement;
   const dropZone = document.getElementById("drop-zone") as HTMLDivElement;
   const previewContainer = document.getElementById(
-    "preview-container"
+    "preview-container",
   ) as HTMLDivElement;
   const fileListContainer = document.getElementById(
-    "file-list"
+    "file-list",
   ) as HTMLDivElement;
   const processBtn = document.getElementById(
-    "process-btn"
+    "process-btn",
   ) as HTMLButtonElement;
   const downloadBtn = document.getElementById(
-    "download-btn"
+    "download-btn",
   ) as HTMLButtonElement;
   const resetBtn = document.getElementById("reset-btn") as HTMLButtonElement;
   const removeBgApiBtn = document.getElementById(
-    "remove-bg-api-btn"
+    "remove-bg-api-btn",
   ) as HTMLButtonElement;
   const removeBgApiHint = document.getElementById(
-    "remove-bg-api-hint"
+    "remove-bg-api-hint",
   ) as HTMLParagraphElement;
   const batchSummary = document.getElementById(
-    "batch-summary"
+    "batch-summary",
   ) as HTMLDivElement;
 
   // Single Preview Elements
   const bgSinglePreview = document.getElementById(
-    "bg-single-preview"
+    "bg-single-preview",
   ) as HTMLDivElement;
   const bgOriginalPreview = document.getElementById(
-    "bg-original-preview"
+    "bg-original-preview",
   ) as HTMLImageElement;
   const bgResultPreview = document.getElementById(
-    "bg-result-preview"
+    "bg-result-preview",
   ) as HTMLImageElement;
   const bgLoadingOverlay = document.getElementById(
-    "bg-loading-overlay"
+    "bg-loading-overlay",
   ) as HTMLDivElement;
   const bgPlaceholderText = document.getElementById(
-    "bg-placeholder-text"
+    "bg-placeholder-text",
   ) as HTMLDivElement;
 
   let files: ProcessedFile[] = [];
@@ -106,7 +106,7 @@ export function initBgRemoval() {
   function handleFiles(newFiles: File[]) {
     const validTypes = ["image/png", "image/jpeg", "image/webp"];
     const imageFiles = newFiles.filter((file) =>
-      validTypes.includes(file.type)
+      validTypes.includes(file.type),
     );
 
     if (imageFiles.length === 0) {
@@ -200,12 +200,20 @@ export function initBgRemoval() {
 
     // Update buttons
     const hasPending = files.some(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
     const hasSuccess = files.some((f) => f.status === "success");
 
     processBtn.disabled = !hasPending;
     removeBgApiBtn.disabled = !hasPending;
+
+    if (files.length === 1) {
+      processBtn.textContent = "Remove Background";
+      downloadBtn.textContent = "Download Result";
+    } else {
+      processBtn.textContent = "Remove Background (All)";
+      downloadBtn.textContent = "Download All (ZIP)";
+    }
 
     if (hasSuccess) {
       downloadBtn.classList.remove("hidden");
@@ -258,7 +266,7 @@ export function initBgRemoval() {
 
   async function processFiles(mode: "local" | "api") {
     const pendingFiles = files.filter(
-      (f) => f.status === "pending" || f.status === "error"
+      (f) => f.status === "pending" || f.status === "error",
     );
 
     if (pendingFiles.length === 0) return;
@@ -314,7 +322,7 @@ export function initBgRemoval() {
   // Handle download
   downloadBtn.addEventListener("click", async () => {
     const successFiles = files.filter(
-      (f) => f.status === "success" && f.resultBlob
+      (f) => f.status === "success" && f.resultBlob,
     );
     if (successFiles.length === 0) return;
 
