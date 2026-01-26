@@ -11,7 +11,7 @@
 ## todo:
 
 1. [x] smooth edging for image color replace
-2. []
+2. [] color swapping
 
 ## future:
 

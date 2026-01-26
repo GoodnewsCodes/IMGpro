@@ -2,6 +2,7 @@ import { initBgRemoval } from "./features/bg-removal";
 import { initImageConversion } from "./features/image-conversion";
 import { initImageResizing } from "./features/image-resizing";
 import { initColorTools } from "./features/color-tools";
+import { initColorSwap } from "./features/color-swap";
 import { initImageManipulation } from "./features/image-manipulation";
 import { initFaviconGenerator } from "./features/favicon-generator";
 import { initOptimization } from "./features/optimization";
@@ -26,6 +27,7 @@ import {
   ExternalLink,
   Search,
   User,
+  Repeat,
 } from "lucide";
 
 // Sidebar Toggle
@@ -124,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ExternalLink,
       Search,
       User,
+      Repeat,
     },
   });
 
@@ -131,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initImageConversion();
   initImageResizing();
   initColorTools();
+  initColorSwap();
   initImageManipulation();
   initFaviconGenerator();
   initOptimization();
@@ -150,7 +154,7 @@ document.addEventListener("dragenter", (e) => {
   dragCounter++;
 
   const activeDropZone = document.querySelector(
-    ".tab-content:not(.hidden) .upload-container"
+    ".tab-content:not(.hidden) .upload-container",
   );
 
   if (activeDropZone) {
@@ -164,7 +168,7 @@ document.addEventListener("dragleave", (e) => {
 
   if (dragCounter === 0) {
     const activeDropZone = document.querySelector(
-      ".tab-content:not(.hidden) .upload-container"
+      ".tab-content:not(.hidden) .upload-container",
     );
     if (activeDropZone) {
       activeDropZone.classList.remove("drag-active");
@@ -181,7 +185,7 @@ document.addEventListener("drop", (e) => {
   dragCounter = 0;
 
   const activeDropZone = document.querySelector(
-    ".tab-content:not(.hidden) .upload-container"
+    ".tab-content:not(.hidden) .upload-container",
   );
   if (activeDropZone) {
     activeDropZone.classList.remove("drag-active");

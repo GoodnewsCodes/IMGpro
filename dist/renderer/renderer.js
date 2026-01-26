@@ -28483,6 +28483,317 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
     });
   }
 
+  // src/renderer/features/color-swap.ts
+  function initColorSwap() {
+    const dropZone = document.getElementById("swap-drop-zone");
+    const fileInput = document.getElementById(
+      "swap-file-input"
+    );
+    const previewContainer = document.getElementById("swap-preview-container");
+    const canvas = document.getElementById("swap-canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const colorASwatch = document.getElementById("swap-color-a-swatch");
+    const colorAHex = document.getElementById(
+      "swap-color-a-hex"
+    );
+    const colorBSwatch = document.getElementById("swap-color-b-swatch");
+    const colorBHex = document.getElementById(
+      "swap-color-b-hex"
+    );
+    const toleranceSlider = document.getElementById(
+      "swap-tolerance-slider"
+    );
+    const toleranceValue = document.getElementById("swap-tolerance-value");
+    const swapBtn = document.getElementById("swap-btn");
+    const downloadBtn = document.getElementById(
+      "swap-download-btn"
+    );
+    const resetBtn = document.getElementById(
+      "swap-reset-btn"
+    );
+    if (!dropZone || !fileInput || !canvas || !swapBtn) return;
+    const resultPreview = document.getElementById(
+      "swap-result-preview"
+    );
+    const resultWrapper = document.getElementById("swap-result-wrapper");
+    const loadingOverlay = document.getElementById("swap-loading-overlay");
+    let originalImage = null;
+    let colorA = { r: 0, g: 0, b: 0 };
+    let colorB = { r: 255, g: 255, b: 255 };
+    let pickingMode = "A";
+    toleranceSlider?.addEventListener("input", () => {
+      if (toleranceValue) toleranceValue.textContent = toleranceSlider.value;
+    });
+    dropZone?.addEventListener("click", () => fileInput.click());
+    dropZone?.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone?.addEventListener("dragleave", (e) => {
+      const relatedTarget = e.relatedTarget;
+      if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+        dropZone.classList.remove("drag-over");
+      }
+    });
+    dropZone?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+    function handleFile(file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          originalImage = img;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0);
+          previewContainer?.classList.remove("hidden");
+          dropZone?.classList.add("hidden");
+          canvas.style.cursor = "crosshair";
+        };
+        img.src = e.target?.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    canvas.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      canvas.classList.add("drag-over");
+    });
+    canvas.addEventListener("dragleave", () => {
+      canvas.classList.remove("drag-over");
+    });
+    canvas.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      canvas.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          resetState();
+          handleFile(file);
+        }
+      }
+    });
+    colorASwatch?.parentElement?.addEventListener("click", () => {
+      pickingMode = "A";
+      highlightActivePicker();
+    });
+    colorBSwatch?.parentElement?.addEventListener("click", () => {
+      pickingMode = "B";
+      highlightActivePicker();
+    });
+    function highlightActivePicker() {
+      const rowA = colorASwatch?.parentElement;
+      const rowB = colorBSwatch?.parentElement;
+      if (pickingMode === "A") {
+        rowA?.classList.add("active-picker");
+        rowB?.classList.remove("active-picker");
+      } else {
+        rowA?.classList.remove("active-picker");
+        rowB?.classList.add("active-picker");
+      }
+    }
+    highlightActivePicker();
+    canvas.addEventListener("click", (e) => {
+      if (!ctx || !originalImage) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return;
+      const pixel = ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+      const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+      const rgb = { r: pixel[0], g: pixel[1], b: pixel[2] };
+      if (pickingMode === "A") {
+        colorA = rgb;
+        if (colorASwatch) colorASwatch.style.backgroundColor = hex;
+        if (colorAHex) colorAHex.value = hex.toUpperCase();
+      } else {
+        colorB = rgb;
+        if (colorBSwatch) colorBSwatch.style.backgroundColor = hex;
+        if (colorBHex) colorBHex.value = hex.toUpperCase();
+      }
+    });
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    }
+    swapBtn.addEventListener("click", () => {
+      if (!ctx || !originalImage) return;
+      loadingOverlay?.classList.remove("hidden");
+      resultWrapper?.classList.remove("hidden");
+      swapBtn.disabled = true;
+      setTimeout(() => {
+        try {
+          const tolerance = parseInt(toleranceSlider.value);
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext("2d");
+          if (!tempCtx || !originalImage) return;
+          const width = tempCanvas.width;
+          const height = tempCanvas.height;
+          tempCtx.drawImage(originalImage, 0, 0);
+          const imageData = tempCtx.getImageData(0, 0, width, height);
+          const data = imageData.data;
+          const maskA = new Float32Array(width * height);
+          const maskB = new Float32Array(width * height);
+          const normalizedTolerance = tolerance / 100 * 442;
+          const feather = 5;
+          const lowerBound = Math.max(0, normalizedTolerance - feather);
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const diffA = Math.sqrt(
+              Math.pow(r - colorA.r, 2) + Math.pow(g - colorA.g, 2) + Math.pow(b - colorA.b, 2)
+            );
+            const diffB = Math.sqrt(
+              Math.pow(r - colorB.r, 2) + Math.pow(g - colorB.g, 2) + Math.pow(b - colorB.b, 2)
+            );
+            if (diffA <= normalizedTolerance) {
+              let alpha = 1;
+              if (diffA > lowerBound) {
+                alpha = 1 - (diffA - lowerBound) / (normalizedTolerance - lowerBound);
+              }
+              maskA[i / 4] = alpha;
+            } else {
+              maskA[i / 4] = 0;
+            }
+            if (diffB <= normalizedTolerance) {
+              let alpha = 1;
+              if (diffB > lowerBound) {
+                alpha = 1 - (diffB - lowerBound) / (normalizedTolerance - lowerBound);
+              }
+              maskB[i / 4] = alpha;
+            } else {
+              maskB[i / 4] = 0;
+            }
+          }
+          const smoothedMaskA = new Float32Array(width * height);
+          const smoothedMaskB = new Float32Array(width * height);
+          const radius = 1;
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              let sumA = 0;
+              let sumB = 0;
+              let count = 0;
+              for (let dy3 = -radius; dy3 <= radius; dy3++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                  const nx = x + dx;
+                  const ny3 = y + dy3;
+                  if (nx >= 0 && nx < width && ny3 >= 0 && ny3 < height) {
+                    const idx2 = ny3 * width + nx;
+                    sumA += maskA[idx2];
+                    sumB += maskB[idx2];
+                    count++;
+                  }
+                }
+              }
+              const idx = y * width + x;
+              smoothedMaskA[idx] = sumA / count;
+              smoothedMaskB[idx] = sumB / count;
+            }
+          }
+          for (let i = 0; i < data.length; i += 4) {
+            const alphaA = smoothedMaskA[i / 4];
+            const alphaB = smoothedMaskB[i / 4];
+            if (alphaA > 0 || alphaB > 0) {
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              let targetR = r;
+              let targetG = g;
+              let targetB = b;
+              if (alphaA > alphaB) {
+                targetR = colorB.r * alphaA + r * (1 - alphaA);
+                targetG = colorB.g * alphaA + g * (1 - alphaA);
+                targetB = colorB.b * alphaA + b * (1 - alphaA);
+              } else if (alphaB > alphaA) {
+                targetR = colorA.r * alphaB + r * (1 - alphaB);
+                targetG = colorA.g * alphaB + g * (1 - alphaB);
+                targetB = colorA.b * alphaB + b * (1 - alphaB);
+              }
+              data[i] = targetR;
+              data[i + 1] = targetG;
+              data[i + 2] = targetB;
+            }
+          }
+          tempCtx.putImageData(imageData, 0, 0);
+          resultPreview.src = tempCanvas.toDataURL();
+          downloadBtn.classList.remove("hidden");
+        } catch (error) {
+          console.error(error);
+          alert("An error occurred during color swapping.");
+        } finally {
+          loadingOverlay?.classList.add("hidden");
+          swapBtn.disabled = false;
+        }
+      }, 50);
+    });
+    downloadBtn.addEventListener("click", async () => {
+      if (!resultPreview.src) return;
+      const savePath = await window.electronAPI.selectSavePath("swapped_image.png");
+      if (savePath) {
+        const response = await fetch(resultPreview.src);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        const result = await window.electronAPI.saveFile({
+          filePath: savePath,
+          buffer
+        });
+        if (!result.success) {
+          alert("Failed to save file: " + result.error);
+        }
+      }
+    });
+    function resetState() {
+      originalImage = null;
+      if (fileInput) fileInput.value = "";
+      if (resultPreview) resultPreview.src = "";
+      previewContainer?.classList.add("hidden");
+      dropZone?.classList.remove("hidden");
+      downloadBtn.classList.add("hidden");
+      resultWrapper?.classList.add("hidden");
+      if (colorASwatch) colorASwatch.style.backgroundColor = "#000000";
+      if (colorAHex) colorAHex.value = "#000000";
+      colorA = { r: 0, g: 0, b: 0 };
+      if (colorBSwatch) colorBSwatch.style.backgroundColor = "#FFFFFF";
+      if (colorBHex) colorBHex.value = "#FFFFFF";
+      colorB = { r: 255, g: 255, b: 255 };
+      pickingMode = "A";
+      highlightActivePicker();
+    }
+    resetBtn.addEventListener("click", resetState);
+  }
+
   // src/renderer/features/image-manipulation.ts
   function initImageManipulation() {
     const editDropZone = document.getElementById("edit-drop-zone");
@@ -29888,6 +30199,14 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "M8 16H3v5" }]
   ];
 
+  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/repeat.js
+  var Repeat = [
+    ["path", { d: "m17 2 4 4-4 4" }],
+    ["path", { d: "M3 11v-1a4 4 0 0 1 4-4h14" }],
+    ["path", { d: "m7 22-4-4 4-4" }],
+    ["path", { d: "M21 13v1a4 4 0 0 1-4 4H3" }]
+  ];
+
   // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/ruler.js
   var Ruler = [
     [
@@ -30068,13 +30387,15 @@ Sitemap: ${siteUrl}/sitemap.xml`;
         Info,
         ExternalLink,
         Search,
-        User
+        User,
+        Repeat
       }
     });
     initBgRemoval();
     initImageConversion();
     initImageResizing();
     initColorTools();
+    initColorSwap();
     initImageManipulation();
     initFaviconGenerator();
     initOptimization();
@@ -30215,6 +30536,7 @@ lucide/dist/esm/icons/info.js:
 lucide/dist/esm/icons/menu.js:
 lucide/dist/esm/icons/palette.js:
 lucide/dist/esm/icons/refresh-cw.js:
+lucide/dist/esm/icons/repeat.js:
 lucide/dist/esm/icons/ruler.js:
 lucide/dist/esm/icons/scissors.js:
 lucide/dist/esm/icons/search.js:

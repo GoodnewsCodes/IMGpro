@@ -85,14 +85,21 @@ body.dark-theme {
 }
 
 body {
-  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system,
-    BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+  font-family:
+    "Segoe UI",
+    "Segoe UI Web (West European)",
+    -apple-system,
+    BlinkMacSystemFont,
+    Roboto,
+    "Helvetica Neue",
+    sans-serif;
   background-color: var(--bg-app);
   color: var(--text-primary);
   overflow: hidden;
   overflow-x: hidden;
   height: 100vh;
-  transition: background-color var(--transition-speed),
+  transition:
+    background-color var(--transition-speed),
     color var(--transition-speed);
 }
 
@@ -113,7 +120,8 @@ a {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border-color);
-  transition: width var(--transition-speed) ease,
+  transition:
+    width var(--transition-speed) ease,
     background-color var(--transition-speed);
   overflow-x: hidden;
   position: relative;
@@ -469,14 +477,22 @@ h1 {
 .canvas-wrapper,
 [id$="-result-wrapper"] {
   width: 100%;
-  max-height: 400px;
-  height: 400px;
+  height: 300px; /* Fixed height as requested */
   object-fit: contain;
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  display: block;
+  display: flex; /* Changed to flex to center content */
+  justify-content: center;
+  align-items: center;
   position: relative;
+  overflow: hidden;
+}
+
+.canvas-wrapper canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .side-by-side .preview-item img,
@@ -848,6 +864,20 @@ option {
   display: flex;
   align-items: center;
   gap: 1rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.color-info-row:hover {
+  background-color: var(--bg-hover);
+}
+
+.color-info-row.active-picker {
+  background-color: var(--bg-hover);
+  border-color: var(--primary);
 }
 
 .color-swatch {
@@ -988,7 +1018,9 @@ input[type="color"]::-webkit-color-swatch {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .favicon-item:hover {
@@ -1076,7 +1108,8 @@ input[type="color"]::-webkit-color-swatch {
   width: 80%;
   max-width: 600px;
   position: relative;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border-color);
 }
