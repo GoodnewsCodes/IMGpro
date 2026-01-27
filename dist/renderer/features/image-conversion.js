@@ -128,6 +128,14 @@ function initImageConversion() {
         const hasPending = files.some((f) => f.status === "pending" || f.status === "error");
         const hasSuccess = files.some((f) => f.status === "success");
         processBtn.disabled = !hasPending;
+        if (files.length === 1) {
+            processBtn.textContent = "Convert Image";
+            downloadBtn.textContent = "Download Result";
+        }
+        else {
+            processBtn.textContent = "Convert Images (All)";
+            downloadBtn.textContent = "Download All (ZIP)";
+        }
         if (hasSuccess) {
             downloadBtn.classList.remove("hidden");
         }

@@ -442,8 +442,8 @@ h1 {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  padding-right: 0.5rem;
+  overflow: hidden; /* Changed from overflow-y: auto to hidden */
+  padding-right: 0; /* Remove padding as children will scroll */
 }
 
 .preview-grid {
@@ -967,7 +967,9 @@ input[type="color"]::-webkit-color-swatch {
   gap: 1.5rem;
   margin-top: 1rem;
   flex: 1;
-  min-height: min-content;
+  min-height: 0; /* Changed from min-content to 0 */
+  height: 100%; /* Ensure it takes full height */
+  overflow: hidden; /* Prevent layout scroll */
 }
 
 .favicon-source {
@@ -979,6 +981,8 @@ input[type="color"]::-webkit-color-swatch {
   flex-direction: column;
   align-items: center;
   min-height: 0;
+  overflow-y: auto; /* Enable independent scroll */
+  height: 100%; /* Take full height of grid cell */
 }
 
 .favicon-source img {
@@ -999,7 +1003,9 @@ input[type="color"]::-webkit-color-swatch {
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  min-height: min-content;
+  min-height: 0;
+  overflow-y: auto; /* Enable independent scroll */
+  height: 100%; /* Take full height of grid cell */
 }
 
 .favicon-grid {
@@ -1008,6 +1014,7 @@ input[type="color"]::-webkit-color-swatch {
   gap: 1rem;
   margin-top: 1rem;
   flex: 1;
+  align-items: start; /* Prevent items from stretching vertically */
 }
 
 .favicon-item {

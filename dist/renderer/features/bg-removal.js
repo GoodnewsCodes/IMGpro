@@ -155,6 +155,14 @@ function initBgRemoval() {
         const hasSuccess = files.some((f) => f.status === "success");
         processBtn.disabled = !hasPending;
         removeBgApiBtn.disabled = !hasPending;
+        if (files.length === 1) {
+            processBtn.textContent = "Remove Background";
+            downloadBtn.textContent = "Download Result";
+        }
+        else {
+            processBtn.textContent = "Remove Background (All)";
+            downloadBtn.textContent = "Download All (ZIP)";
+        }
         if (hasSuccess) {
             downloadBtn.classList.remove("hidden");
         }

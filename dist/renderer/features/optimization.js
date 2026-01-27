@@ -128,6 +128,18 @@ function initOptimization() {
         const hasSuccess = files.some((f) => f.status === "success");
         if (processBtn)
             processBtn.disabled = !hasPending;
+        if (files.length === 1) {
+            if (processBtn)
+                processBtn.textContent = "Optimize Image";
+            if (downloadBtn)
+                downloadBtn.textContent = "Download Result";
+        }
+        else {
+            if (processBtn)
+                processBtn.textContent = "Optimize Images (All)";
+            if (downloadBtn)
+                downloadBtn.textContent = "Download All (ZIP)";
+        }
         if (hasSuccess) {
             downloadBtn?.classList.remove("hidden");
         }

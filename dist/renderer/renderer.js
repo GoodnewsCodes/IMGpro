@@ -27518,6 +27518,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       const hasSuccess = files.some((f) => f.status === "success");
       processBtn.disabled = !hasPending;
       removeBgApiBtn.disabled = !hasPending;
+      if (files.length === 1) {
+        processBtn.textContent = "Remove Background";
+        downloadBtn.textContent = "Download Result";
+      } else {
+        processBtn.textContent = "Remove Background (All)";
+        downloadBtn.textContent = "Download All (ZIP)";
+      }
       if (hasSuccess) {
         downloadBtn.classList.remove("hidden");
       } else {
@@ -27887,6 +27894,13 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       );
       const hasSuccess = files.some((f) => f.status === "success");
       processBtn.disabled = !hasPending;
+      if (files.length === 1) {
+        processBtn.textContent = "Convert Image";
+        downloadBtn.textContent = "Download Result";
+      } else {
+        processBtn.textContent = "Convert Images (All)";
+        downloadBtn.textContent = "Download All (ZIP)";
+      }
       if (hasSuccess) {
         downloadBtn.classList.remove("hidden");
       } else {
@@ -29822,6 +29836,13 @@ Sitemap: ${siteUrl}/sitemap.xml`;
       );
       const hasSuccess = files.some((f) => f.status === "success");
       if (processBtn) processBtn.disabled = !hasPending;
+      if (files.length === 1) {
+        if (processBtn) processBtn.textContent = "Optimize Image";
+        if (downloadBtn) downloadBtn.textContent = "Download Result";
+      } else {
+        if (processBtn) processBtn.textContent = "Optimize Images (All)";
+        if (downloadBtn) downloadBtn.textContent = "Download All (ZIP)";
+      }
       if (hasSuccess) {
         downloadBtn?.classList.remove("hidden");
       } else {
