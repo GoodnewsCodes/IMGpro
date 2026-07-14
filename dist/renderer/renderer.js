@@ -12,11 +12,20 @@
     if (typeof require !== "undefined") return require.apply(this, arguments);
     throw Error('Dynamic require of "' + x + '" is not supported');
   });
-  var __esm = (fn3, res) => function __init() {
-    return fn3 && (res = (0, fn3[__getOwnPropNames(fn3)[0]])(fn3 = 0)), res;
+  var __esm = (fn3, res, err) => function __init() {
+    if (err) throw err[0];
+    try {
+      return fn3 && (res = (0, fn3[__getOwnPropNames(fn3)[0]])(fn3 = 0)), res;
+    } catch (e) {
+      throw err = [e], e;
+    }
   };
   var __commonJS = (cb, mod) => function __require2() {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
   };
   var __export = (target, all) => {
     for (var name in all)
@@ -26811,7 +26820,7 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       ...processCreateParams(params)
     });
   };
-  var BRAND = Symbol("zod_brand");
+  var BRAND = /* @__PURE__ */ Symbol("zod_brand");
   var ZodBranded = class extends ZodType {
     _parse(input) {
       const { ctx } = this._processInputParams(input);
@@ -30052,7 +30061,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     updateUI();
   }
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/defaultAttributes.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/defaultAttributes.mjs
   var defaultAttributes = {
     xmlns: "http://www.w3.org/2000/svg",
     width: 24,
@@ -30065,7 +30074,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     "stroke-linejoin": "round"
   };
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/createElement.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/createElement.mjs
   var createSVGElement = ([tag, attrs, children]) => {
     const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
     Object.keys(attrs).forEach((name) => {
@@ -30088,7 +30097,34 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     return createSVGElement([tag, attrs, iconNode]);
   };
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/replaceElement.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/shared/src/utils/hasA11yProp.mjs
+  var hasA11yProp = (props) => {
+    for (const prop in props) {
+      if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/shared/src/utils/mergeClasses.mjs
+  var mergeClasses = (...classes) => classes.filter((className, index, array) => {
+    return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
+  }).join(" ").trim();
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/shared/src/utils/toCamelCase.mjs
+  var toCamelCase = (string) => string.replace(
+    /^([A-Z])|[\s-_]+(\w)/g,
+    (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+  );
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/shared/src/utils/toPascalCase.mjs
+  var toPascalCase = (string) => {
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  };
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/replaceElement.mjs
   var getAttrs = (element) => Array.from(element.attributes).reduce((attrs, attr) => {
     attrs[attr.name] = attr.value;
     return attrs;
@@ -30104,11 +30140,6 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     }
     return "";
   };
-  var combineClassNames = (arrayOfClassnames) => {
-    const classNameArray = arrayOfClassnames.flatMap(getClassNames);
-    return classNameArray.map((classItem) => classItem.trim()).filter(Boolean).filter((value, index, self2) => self2.indexOf(value) === index).join(" ");
-  };
-  var toPascalCase = (string) => string.replace(/(\w)(\w*)(_|-|\s*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
   var replaceElement = (element, { nameAttr, icons, attrs }) => {
     const iconName = element.getAttribute(nameAttr);
     if (iconName == null) return;
@@ -30120,13 +30151,22 @@ Sitemap: ${siteUrl}/sitemap.xml`;
       );
     }
     const elementAttrs = getAttrs(element);
+    const ariaProps = hasA11yProp(elementAttrs) ? {} : { "aria-hidden": "true" };
     const iconAttrs = {
       ...defaultAttributes,
       "data-lucide": iconName,
+      ...ariaProps,
       ...attrs,
       ...elementAttrs
     };
-    const classNames = combineClassNames(["lucide", `lucide-${iconName}`, elementAttrs, attrs]);
+    const elementClassNames = getClassNames(elementAttrs);
+    const className = getClassNames(attrs);
+    const classNames = mergeClasses(
+      "lucide",
+      `lucide-${iconName}`,
+      ...elementClassNames,
+      ...className
+    );
     if (classNames) {
       Object.assign(iconAttrs, {
         class: classNames
@@ -30136,37 +30176,27 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     return element.parentNode?.replaceChild(svgElement, element);
   };
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/crop.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/crop.mjs
   var Crop = [
     ["path", { d: "M6 2v14a2 2 0 0 0 2 2h14" }],
     ["path", { d: "M18 22V8a2 2 0 0 0-2-2H2" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/external-link.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/external-link.mjs
   var ExternalLink = [
     ["path", { d: "M15 3h6v6" }],
     ["path", { d: "M10 14 21 3" }],
     ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/flip-horizontal.js
-  var FlipHorizontal = [
-    ["path", { d: "M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" }],
-    ["path", { d: "M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" }],
-    ["path", { d: "M12 20v2" }],
-    ["path", { d: "M12 14v2" }],
-    ["path", { d: "M12 8v2" }],
-    ["path", { d: "M12 2v2" }]
-  ];
-
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/globe.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/globe.mjs
   var Globe = [
     ["circle", { cx: "12", cy: "12", r: "10" }],
     ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }],
     ["path", { d: "M2 12h20" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/house.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/house.mjs
   var House = [
     ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" }],
     [
@@ -30177,28 +30207,28 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/image.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/image.mjs
   var Image2 = [
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2" }],
     ["circle", { cx: "9", cy: "9", r: "2" }],
     ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/info.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/info.mjs
   var Info = [
     ["circle", { cx: "12", cy: "12", r: "10" }],
     ["path", { d: "M12 16v-4" }],
     ["path", { d: "M12 8h.01" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/menu.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/menu.mjs
   var Menu = [
     ["path", { d: "M4 5h16" }],
     ["path", { d: "M4 12h16" }],
     ["path", { d: "M4 19h16" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/palette.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/palette.mjs
   var Palette = [
     [
       "path",
@@ -30212,7 +30242,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/refresh-cw.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/refresh-cw.mjs
   var RefreshCw = [
     ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }],
     ["path", { d: "M21 3v5h-5" }],
@@ -30220,7 +30250,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "M8 16H3v5" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/repeat.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/repeat.mjs
   var Repeat = [
     ["path", { d: "m17 2 4 4-4 4" }],
     ["path", { d: "M3 11v-1a4 4 0 0 1 4-4h14" }],
@@ -30228,7 +30258,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "M21 13v1a4 4 0 0 1-4 4H3" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/ruler.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/ruler.mjs
   var Ruler = [
     [
       "path",
@@ -30242,7 +30272,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "m17.5 15.5 2-2" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/scissors.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/scissors.mjs
   var Scissors = [
     ["circle", { cx: "6", cy: "6", r: "3" }],
     ["path", { d: "M8.12 8.12 12 12" }],
@@ -30251,13 +30281,13 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "M14.8 14.8 20 20" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/search.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/search.mjs
   var Search = [
     ["path", { d: "m21 21-4.34-4.34" }],
     ["circle", { cx: "11", cy: "11", r: "8" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/settings.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/settings.mjs
   var Settings = [
     [
       "path",
@@ -30268,20 +30298,30 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["circle", { cx: "12", cy: "12", r: "3" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/upload.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/square-centerline-dashed-horizontal.mjs
+  var SquareCenterlineDashedHorizontal = [
+    ["path", { d: "M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" }],
+    ["path", { d: "M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" }],
+    ["path", { d: "M12 20v2" }],
+    ["path", { d: "M12 14v2" }],
+    ["path", { d: "M12 8v2" }],
+    ["path", { d: "M12 2v2" }]
+  ];
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/upload.mjs
   var Upload = [
     ["path", { d: "M12 3v12" }],
     ["path", { d: "m17 8-5-5-5 5" }],
     ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/user.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/user.mjs
   var User = [
     ["path", { d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" }],
     ["circle", { cx: "12", cy: "7", r: "4" }]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/icons/zap.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/zap.mjs
   var Zap = [
     [
       "path",
@@ -30291,7 +30331,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ]
   ];
 
-  // node_modules/.pnpm/lucide@0.562.0/node_modules/lucide/dist/esm/lucide.js
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/lucide.mjs
   var createIcons = ({
     icons = {},
     nameAttr = "data-lucide",
@@ -30398,7 +30438,7 @@ Sitemap: ${siteUrl}/sitemap.xml`;
         RefreshCw,
         Image: Image2,
         Upload,
-        FlipHorizontal,
+        FlipHorizontal: SquareCenterlineDashedHorizontal,
         Globe,
         Menu,
         Home: House,
@@ -30544,30 +30584,34 @@ jszip/dist/jszip.min.js:
      *)
   *)
 
-lucide/dist/esm/defaultAttributes.js:
-lucide/dist/esm/createElement.js:
-lucide/dist/esm/replaceElement.js:
-lucide/dist/esm/icons/crop.js:
-lucide/dist/esm/icons/external-link.js:
-lucide/dist/esm/icons/flip-horizontal.js:
-lucide/dist/esm/icons/globe.js:
-lucide/dist/esm/icons/house.js:
-lucide/dist/esm/icons/image.js:
-lucide/dist/esm/icons/info.js:
-lucide/dist/esm/icons/menu.js:
-lucide/dist/esm/icons/palette.js:
-lucide/dist/esm/icons/refresh-cw.js:
-lucide/dist/esm/icons/repeat.js:
-lucide/dist/esm/icons/ruler.js:
-lucide/dist/esm/icons/scissors.js:
-lucide/dist/esm/icons/search.js:
-lucide/dist/esm/icons/settings.js:
-lucide/dist/esm/icons/upload.js:
-lucide/dist/esm/icons/user.js:
-lucide/dist/esm/icons/zap.js:
-lucide/dist/esm/lucide.js:
+lucide/dist/esm/defaultAttributes.mjs:
+lucide/dist/esm/createElement.mjs:
+lucide/dist/esm/shared/src/utils/hasA11yProp.mjs:
+lucide/dist/esm/shared/src/utils/mergeClasses.mjs:
+lucide/dist/esm/shared/src/utils/toCamelCase.mjs:
+lucide/dist/esm/shared/src/utils/toPascalCase.mjs:
+lucide/dist/esm/replaceElement.mjs:
+lucide/dist/esm/icons/crop.mjs:
+lucide/dist/esm/icons/external-link.mjs:
+lucide/dist/esm/icons/globe.mjs:
+lucide/dist/esm/icons/house.mjs:
+lucide/dist/esm/icons/image.mjs:
+lucide/dist/esm/icons/info.mjs:
+lucide/dist/esm/icons/menu.mjs:
+lucide/dist/esm/icons/palette.mjs:
+lucide/dist/esm/icons/refresh-cw.mjs:
+lucide/dist/esm/icons/repeat.mjs:
+lucide/dist/esm/icons/ruler.mjs:
+lucide/dist/esm/icons/scissors.mjs:
+lucide/dist/esm/icons/search.mjs:
+lucide/dist/esm/icons/settings.mjs:
+lucide/dist/esm/icons/square-centerline-dashed-horizontal.mjs:
+lucide/dist/esm/icons/upload.mjs:
+lucide/dist/esm/icons/user.mjs:
+lucide/dist/esm/icons/zap.mjs:
+lucide/dist/esm/lucide.mjs:
   (**
-   * @license lucide v0.562.0 - ISC
+   * @license lucide v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.

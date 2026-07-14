@@ -40,7 +40,6 @@ const electron_1 = require("electron");
 const path = __importStar(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
 const fs = __importStar(require("fs"));
-const png_to_ico_1 = __importDefault(require("png-to-ico"));
 const png2icons = __importStar(require("png2icons"));
 function createWindow() {
     const mainWindow = new electron_1.BrowserWindow({
@@ -289,8 +288,9 @@ electron_1.ipcMain.handle("save-file", async (_event, { filePath, buffer }) => {
 });
 electron_1.ipcMain.handle("generate-ico", async (_event, buffers) => {
     try {
+        const { default: pngToIco } = await import("png-to-ico");
         const nodeBuffers = buffers.map((b) => Buffer.from(b));
-        const icoBuffer = await (0, png_to_ico_1.default)(nodeBuffers);
+        const icoBuffer = await pngToIco(nodeBuffers);
         return { success: true, buffer: icoBuffer };
     }
     catch (error) {

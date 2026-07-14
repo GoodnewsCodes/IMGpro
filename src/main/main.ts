@@ -9,7 +9,7 @@ import {
 import * as path from "path";
 import sharp from "sharp";
 import * as fs from "fs";
-import pngToIco from "png-to-ico";
+
 import * as png2icons from "png2icons";
 
 function createWindow() {
@@ -366,6 +366,7 @@ ipcMain.handle(
   "generate-ico",
   async (_event: IpcMainInvokeEvent, buffers: Uint8Array[]) => {
     try {
+      const { default: pngToIco } = await import("png-to-ico");
       const nodeBuffers = buffers.map((b) => Buffer.from(b));
       const icoBuffer = await pngToIco(nodeBuffers);
       return { success: true, buffer: icoBuffer };

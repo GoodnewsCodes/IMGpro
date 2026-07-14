@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "Node16",
     "lib": ["ESNext", "DOM"],
     "outDir": "dist",
     "rootDir": "src",
@@ -9,11 +9,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "paths": {
-      "electron": ["node_modules/electron/electron.d.ts"]
+      "electron": ["./node_modules/electron/electron.d.ts"]
     }
   },
   "include": ["src/**/*"],
