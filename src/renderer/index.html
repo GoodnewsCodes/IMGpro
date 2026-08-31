@@ -1,241 +1,240 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>IMG Pro</title>
-    <link rel="stylesheet" href="style.css" />
-    <!-- Favicon links -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-  </head>
-  <body>
-    <div class="app-container">
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <button id="sidebar-toggle" class="icon-btn">
-            <img data-src="icon.png" alt="IMG" class="logo-icon" />
-            <span class="icon-span">Click Me</span>
-          </button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>IMG Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Favicon links -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+</head>
+
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <button id="sidebar-toggle" class="icon-btn">
+          <img data-src="icon.png" alt="IMG" class="logo-icon" />
+          <span class="icon-span">Click Me</span>
+        </button>
+      </div>
+      <nav>
+        <div class="nav-item active" data-tab="home">
+          <i data-lucide="home"></i>
+          <span>Home</span>
         </div>
-        <nav>
-          <div class="nav-item active" data-tab="home">
-            <i data-lucide="home"></i>
-            <span>Home</span>
-          </div>
-          <div class="nav-item" data-tab="bg-removal">
-            <i data-lucide="scissors"></i>
-            <span>Remove Background</span>
-          </div>
-          <div class="nav-item" data-tab="favicon-gen">
-            <i data-lucide="globe"></i>
-            <span>Favicon Generator</span>
-          </div>
-          <div class="nav-item" data-tab="conversion">
-            <i data-lucide="refresh-cw"></i>
-            <span>Conversion Tools</span>
-          </div>
-          <div class="nav-item" data-tab="optimization">
-            <i data-lucide="zap"></i>
-            <span>Optimization</span>
-          </div>
-          <div class="nav-item" data-tab="resizer">
-            <i data-lucide="ruler"></i>
-            <span>Resizer</span>
-          </div>
-          <div class="nav-item" data-tab="edit">
-            <i data-lucide="crop"></i>
-            <span>Image Manipulation</span>
-          </div>
-          <div class="nav-item" data-tab="color-tools">
-            <i data-lucide="palette"></i>
-            <span>Pick & Replace</span>
-          </div>
-          <div class="nav-item" data-tab="color-swap">
-            <i data-lucide="repeat"></i>
-            <span>Color Swap</span>
-          </div>
-          <div class="divider"></div>
-          <div class="nav-item" data-tab="settings">
-            <i data-lucide="settings"></i>
-            <span>Settings</span>
-          </div>
-          <div class="nav-item" data-tab="about">
-            <i data-lucide="info"></i>
-            <span>About Dev</span>
-          </div>
-        </nav>
-      </aside>
-      <main class="content">
-        <!-- Home Section -->
-        <section id="home-section" class="tab-content">
-          <header>
-            <span class="logo-text">IMG Pro</span>
-          </header>
-          <div class="welcome-card">
-            <p>Select a tool from the sidebar to get started.</p>
-            <div class="tool-grid">
-              <div class="tool-card" data-tab="bg-removal">
-                <div class="tool-icon bg-removal-icon">
-                  <i data-lucide="scissors"></i>
-                </div>
-                <h3>Remove Background</h3>
-                <p>Automatically remove backgrounds from images using AI.</p>
+        <div class="nav-item" data-tab="bg-removal">
+          <i data-lucide="scissors"></i>
+          <span>Remove Background</span>
+        </div>
+        <div class="nav-item" data-tab="favicon-gen">
+          <i data-lucide="globe"></i>
+          <span>Favicon Generator</span>
+        </div>
+        <div class="nav-item" data-tab="conversion">
+          <i data-lucide="refresh-cw"></i>
+          <span>Conversion Tools</span>
+        </div>
+        <div class="nav-item" data-tab="optimization">
+          <i data-lucide="zap"></i>
+          <span>Optimization</span>
+        </div>
+        <div class="nav-item" data-tab="resizer">
+          <i data-lucide="ruler"></i>
+          <span>Resizer</span>
+        </div>
+        <div class="nav-item" data-tab="edit">
+          <i data-lucide="crop"></i>
+          <span>Image Manipulation</span>
+        </div>
+        <div class="nav-item" data-tab="color-tools">
+          <i data-lucide="palette"></i>
+          <span>Pick & Replace</span>
+        </div>
+        <div class="nav-item" data-tab="color-swap">
+          <i data-lucide="repeat"></i>
+          <span>Color Swap</span>
+        </div>
+        <div class="divider"></div>
+        <div class="nav-item" data-tab="settings">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </div>
+        <div class="nav-item" data-tab="about">
+          <i data-lucide="info"></i>
+          <span>About Dev</span>
+        </div>
+      </nav>
+    </aside>
+    <main class="content">
+      <!-- Home Section -->
+      <section id="home-section" class="tab-content">
+        <header>
+          <span class="logo-text">IMG Pro</span>
+        </header>
+        <div class="welcome-card">
+          <p>Select a tool from the sidebar to get started.</p>
+          <div class="tool-grid">
+            <div class="tool-card" data-tab="bg-removal">
+              <div class="tool-icon bg-removal-icon">
+                <i data-lucide="scissors"></i>
               </div>
-              <div class="tool-card" data-tab="conversion">
-                <div class="tool-icon conversion-icon">
-                  <i data-lucide="refresh-cw"></i>
-                </div>
-                <h3>Image Conversion</h3>
-                <p>Convert images between JPG, PNG, WebP, and more.</p>
+              <h3>Remove Background</h3>
+              <p>Automatically remove backgrounds from images using AI.</p>
+            </div>
+            <div class="tool-card" data-tab="conversion">
+              <div class="tool-icon conversion-icon">
+                <i data-lucide="refresh-cw"></i>
               </div>
-              <div class="tool-card" data-tab="resizer">
-                <div class="tool-icon resizer-icon">
-                  <i data-lucide="ruler"></i>
-                </div>
-                <h3>Image Resizer</h3>
-                <p>Change image dimensions with aspect ratio control.</p>
+              <h3>Image & Video Conversion</h3>
+              <p>Convert images to multiple formats or videos to animated GIF.</p>
+            </div>
+            <div class="tool-card" data-tab="resizer">
+              <div class="tool-icon resizer-icon">
+                <i data-lucide="ruler"></i>
               </div>
-              <div class="tool-card" data-tab="edit">
-                <div class="tool-icon edit-icon">
-                  <i data-lucide="crop"></i>
-                </div>
-                <h3>Image Manipulation</h3>
-                <p>
-                  Crop, rotate, flip, and mirror your images with precision.
-                </p>
+              <h3>Image Resizer</h3>
+              <p>Change image dimensions with aspect ratio control.</p>
+            </div>
+            <div class="tool-card" data-tab="edit">
+              <div class="tool-icon edit-icon">
+                <i data-lucide="crop"></i>
               </div>
-              <div class="tool-card" data-tab="favicon-gen">
-                <div class="tool-icon favicon-gen-icon">
-                  <i data-lucide="globe"></i>
-                </div>
-                <h3>Favicon Generator</h3>
-                <p>Generate all standard favicon sizes from a single image.</p>
+              <h3>Image Manipulation</h3>
+              <p>
+                Crop, rotate, flip, and mirror your images with precision.
+              </p>
+            </div>
+            <div class="tool-card" data-tab="favicon-gen">
+              <div class="tool-icon favicon-gen-icon">
+                <i data-lucide="globe"></i>
               </div>
-              <div class="tool-card" data-tab="optimization">
-                <div class="tool-icon optimization-icon">
-                  <i data-lucide="zap"></i>
-                </div>
-                <h3>Optimization</h3>
-                <p>Reduce file size while maintaining image quality.</p>
+              <h3>Favicon Generator</h3>
+              <p>Generate all standard favicon sizes from a single image.</p>
+            </div>
+            <div class="tool-card" data-tab="optimization">
+              <div class="tool-icon optimization-icon">
+                <i data-lucide="zap"></i>
               </div>
-              <div class="tool-card" data-tab="color-tools">
-                <div class="tool-icon color-tools-icon">
-                  <i data-lucide="palette"></i>
-                </div>
-                <h3>Pick & Replace</h3>
-                <p>Pick colors from images or replace them with new ones.</p>
+              <h3>Optimization</h3>
+              <p>Reduce file size while maintaining image quality.</p>
+            </div>
+            <div class="tool-card" data-tab="color-tools">
+              <div class="tool-icon color-tools-icon">
+                <i data-lucide="palette"></i>
               </div>
-              <div class="tool-card" data-tab="color-swap">
-                <div class="tool-icon color-swap-icon">
-                  <i data-lucide="repeat"></i>
-                </div>
-                <h3>Color Swap</h3>
-                <p>Swap two colors in an image.</p>
+              <h3>Pick & Replace</h3>
+              <p>Pick colors from images or replace them with new ones.</p>
+            </div>
+            <div class="tool-card" data-tab="color-swap">
+              <div class="tool-icon color-swap-icon">
+                <i data-lucide="repeat"></i>
               </div>
+              <h3>Color Swap</h3>
+              <p>Swap two colors in an image.</p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Background Removal Section -->
-        <section id="bg-removal-section" class="tab-content hidden">
-          <header>
-            <h1>Remove Background</h1>
-          </header>
+      <!-- Background Removal Section -->
+      <section id="bg-removal-section" class="tab-content hidden">
+        <header>
+          <h1>Remove Background</h1>
+        </header>
 
-          <div class="tool-section">
-            <p>Upload an image to remove its background automatically.</p>
+        <div class="tool-section">
+          <p>Upload an image to remove its background automatically.</p>
 
-            <div class="upload-container" id="drop-zone">
-              <input
-                type="file"
-                id="file-input"
-                accept="image/png, image/jpeg, image/webp"
-                multiple
-                hidden
-              />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
+          <div class="upload-container" id="drop-zone">
+            <input type="file" id="file-input" accept="image/png, image/jpeg, image/webp" multiple hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
             </div>
+          </div>
 
-            <div id="preview-container" class="hidden">
-              <div class="batch-summary hidden" id="batch-summary"></div>
+          <div id="preview-container" class="hidden">
+            <div class="batch-summary hidden" id="batch-summary"></div>
 
-              <!-- Single Image Preview -->
-              <div id="bg-single-preview" class="hidden">
-                <div class="preview-grid side-by-side">
-                  <div class="preview-item">
-                    <h3>Original</h3>
-                    <img id="bg-original-preview" src="" alt="Original" />
-                  </div>
-                  <div class="preview-item">
-                    <h3>Result</h3>
-                    <div id="bg-result-wrapper" class="canvas-wrapper">
-                      <img id="bg-result-preview" src="" alt="Result" />
-                      <div id="bg-loading-overlay" class="hidden">
-                        <div class="spinner"></div>
-                        <p>Processing...</p>
-                      </div>
-                      <div id="bg-placeholder-text" class="placeholder-text">
-                        Click "Remove Background" to see result
-                      </div>
+            <!-- Single Image Preview -->
+            <div id="bg-single-preview" class="hidden">
+              <div class="preview-grid side-by-side">
+                <div class="preview-item">
+                  <h3>Original</h3>
+                  <img id="bg-original-preview" src="" alt="Original" />
+                </div>
+                <div class="preview-item">
+                  <h3>Result</h3>
+                  <div id="bg-result-wrapper" class="canvas-wrapper">
+                    <img id="bg-result-preview" src="" alt="Result" />
+                    <div id="bg-loading-overlay" class="hidden">
+                      <div class="spinner"></div>
+                      <p>Processing...</p>
+                    </div>
+                    <div id="bg-placeholder-text" class="placeholder-text">
+                      Click "Remove Background" to see result
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div id="file-list" class="file-list">
-                <!-- File items will be injected here -->
-              </div>
+            <div id="file-list" class="file-list">
+              <!-- File items will be injected here -->
+            </div>
 
-              <div class="actions">
-                <button id="process-btn" class="btn primary">
-                  Remove Background (All)
-                </button>
-                <button id="download-btn" class="btn secondary hidden">
-                  Download All (ZIP)
-                </button>
-                <p
-                  id="remove-bg-api-hint"
-                  class="upload-hint"
-                  style="margin-top: 1rem; width: 100%; text-align: center"
-                >
-                  Not satisfied? Try our cloud-based alternative for better
-                  results.
-                </p>
-                <button id="remove-bg-api-btn" class="btn secondary">
-                  Try remove.bg (API)
-                </button>
-                <button id="reset-btn" class="btn ghost">Reset</button>
-              </div>
+            <div class="actions">
+              <button id="process-btn" class="btn primary">
+                Remove Background (All)
+              </button>
+              <button id="download-btn" class="btn secondary hidden">
+                Download All (ZIP)
+              </button>
+              <p id="remove-bg-api-hint" class="upload-hint" style="margin-top: 1rem; width: 100%; text-align: center">
+                Not satisfied? Try our cloud-based alternative for better
+                results.
+              </p>
+              <button id="remove-bg-api-btn" class="btn secondary">
+                Try remove.bg (API)
+              </button>
+              <button id="reset-btn" class="btn ghost">Reset</button>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Other sections as placeholders -->
-        <!-- Conversion Section -->
-        <section id="conversion-section" class="tab-content hidden">
-          <header>
-            <h1>Conversion Tools</h1>
-          </header>
+      <!-- Other sections as placeholders -->
+      <!-- Conversion Section -->
+      <section id="conversion-section" class="tab-content hidden">
+        <header>
+          <h1>Conversion Tools</h1>
+        </header>
 
+        <div class="sub-tab-nav">
+          <button class="sub-tab-btn active" data-subtab="image-conv">
+            <i data-lucide="image"></i>
+            <span>Image Conversion</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="video-gif">
+            <i data-lucide="film"></i>
+            <span>Video to GIF</span>
+          </button>
+        </div>
+
+        <!-- Image Conversion Sub-tab -->
+        <div id="subtab-image-conv" class="subtab-pane active">
           <div class="tool-section">
             <p>Convert your images to different formats easily.</p>
 
             <div class="upload-container" id="conv-drop-zone">
-              <input
-                type="file"
-                id="conv-file-input"
-                accept="image/*"
-                multiple
-                hidden
-              />
+              <input type="file" id="conv-file-input" accept="image/*" multiple hidden />
               <div class="upload-box">
                 <div class="upload-icon"><i data-lucide="upload"></i></div>
                 <p>Drag & drop an image or <span>browse</span></p>
@@ -261,17 +260,8 @@
                   </select>
                 </div>
                 <div class="setting-group" id="quality-group">
-                  <label for="quality-slider"
-                    >Quality: <span id="quality-value">80</span>%</label
-                  >
-                  <input
-                    type="range"
-                    id="quality-slider"
-                    min="1"
-                    max="100"
-                    value="80"
-                    class="slider"
-                  />
+                  <label for="quality-slider">Quality: <span id="quality-value">80</span>%</label>
+                  <input type="range" id="quality-slider" min="1" max="100" value="80" class="slider" />
                 </div>
               </div>
 
@@ -291,923 +281,868 @@
               </div>
             </div>
           </div>
-        </section>
-        <section id="resizer-section" class="tab-content hidden">
-          <header>
-            <h1>Image Resizer</h1>
-          </header>
+        </div>
 
+        <!-- Video to GIF Sub-tab -->
+        <div id="subtab-video-gif" class="subtab-pane hidden">
           <div class="tool-section">
-            <p>Resize your images to specific dimensions.</p>
+            <p>Convert video clips to high quality animated GIFs with custom FPS, trimming, and scaling.</p>
 
-            <div class="upload-container" id="resize-drop-zone">
-              <input
-                type="file"
-                id="resize-file-input"
-                accept="image/*"
-                hidden
-              />
+            <div class="upload-container" id="video-drop-zone">
+              <input type="file" id="video-file-input" accept="video/*,.mp4,.webm,.mov,.mkv,.avi,.ogv" hidden />
               <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP, TIFF, AVIF</p>
+                <div class="upload-icon"><i data-lucide="film"></i></div>
+                <p>Drag & drop a video file or <span>browse</span></p>
+                <p class="upload-hint">
+                  Supports MP4, WebM, MOV, MKV, AVI, OGV
+                </p>
               </div>
             </div>
 
-            <div id="resize-preview-container" class="hidden">
-              <div class="settings-panel resizer-settings">
-                <div class="settings-left">
-                  <div class="setting-row">
+            <div id="video-preview-container" class="hidden">
+              <div class="video-gif-grid">
+                <!-- Video Player & Trimming -->
+                <div class="video-preview-card">
+                  <div class="card-header">
+                    <h3><i data-lucide="video"></i> Video Preview</h3>
+                    <span id="video-info-badge" class="badge">00:00 • 0x0</span>
+                  </div>
+                  <div class="video-player-wrapper">
+                    <video id="v2g-video-element" controls playsinline></video>
+                  </div>
+                  <div class="trim-controls">
+                    <div class="trim-row">
+                      <div class="trim-group">
+                        <label for="v2g-start-time">Start Time (sec)</label>
+                        <div class="input-with-action">
+                          <input type="number" id="v2g-start-time" class="number-input" min="0" step="0.1" value="0" />
+                          <button id="v2g-set-start-btn" class="btn-mini" title="Set to current playback time">Set
+                            Current</button>
+                        </div>
+                      </div>
+                      <div class="trim-group">
+                        <label for="v2g-end-time">End Time (sec)</label>
+                        <div class="input-with-action">
+                          <input type="number" id="v2g-end-time" class="number-input" min="0.1" step="0.1" value="5" />
+                          <button id="v2g-set-end-btn" class="btn-mini" title="Set to current playback time">Set
+                            Current</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="trim-hint" id="v2g-duration-hint">Clip duration: 5.0s (Estimated frames: 50)</div>
+                  </div>
+                </div>
+
+                <!-- GIF Settings & Output -->
+                <div class="video-settings-card">
+                  <div class="card-header">
+                    <h3><i data-lucide="sparkles"></i> GIF Settings</h3>
+                  </div>
+                  <div class="settings-panel vertical">
                     <div class="setting-group">
-                      <label for="resize-width">Width (px)</label>
-                      <input
-                        type="number"
-                        id="resize-width"
-                        class="number-input"
-                        placeholder="Width"
-                      />
-                    </div>
-                    <div class="setting-group">
-                      <label for="resize-height">Height (px)</label>
-                      <input
-                        type="number"
-                        id="resize-height"
-                        class="number-input"
-                        placeholder="Height"
-                      />
-                    </div>
-                  </div>
-                  <div class="setting-group checkbox-group">
-                    <input type="checkbox" id="lock-aspect-ratio" checked />
-                    <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
-                  </div>
-                </div>
-
-                <div class="settings-right">
-                  <div class="setting-group">
-                    <label for="resize-fit">Fit Mode</label>
-                    <select id="resize-fit" class="select-input">
-                      <option value="cover">Cover (Crop to fit)</option>
-                      <option value="contain">Contain (Add padding)</option>
-                      <option value="fill">Fill (Stretch)</option>
-                      <option value="inside">Inside (Keep aspect)</option>
-                      <option value="outside">Outside (Keep aspect)</option>
-                    </select>
-                  </div>
-
-                  <div class="setting-group">
-                    <label for="resize-format">Output Format</label>
-                    <select id="resize-format" class="select-input">
-                      <option value="">Same as Original</option>
-                      <option value="jpg">JPEG</option>
-                      <option value="png">PNG</option>
-                      <option value="webp">WebP</option>
-                      <option value="avif">AVIF</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original</h3>
-                  <img id="resize-original-preview" src="" alt="Original" />
-                  <div class="image-info" id="resize-original-info"></div>
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="resize-result-wrapper">
-                    <img id="resize-result-preview" src="" alt="Result" />
-                    <div id="resize-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="resize-loading-text">Resizing...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button id="resize-process-btn" class="btn primary">
-                  Resize Image
-                </button>
-                <button id="resize-download-btn" class="btn secondary hidden">
-                  Download Result
-                </button>
-                <button id="resize-reset-btn" class="btn ghost">Reset</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="color-tools-section" class="tab-content hidden">
-          <header>
-            <h1>Pick & Replace</h1>
-          </header>
-
-          <div class="tool-section">
-            <p>Pick a color from your image or replace a specific color.</p>
-
-            <div class="upload-container" id="color-drop-zone">
-              <input
-                type="file"
-                id="color-file-input"
-                accept="image/*"
-                hidden
-              />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
-            </div>
-
-            <div id="color-preview-container" class="hidden">
-              <div class="settings-panel">
-                <div class="color-picker-display">
-                  <div class="setting-group">
-                    <label>Picked Color</label>
-                    <div class="color-info-row">
-                      <div id="picked-color-swatch" class="color-swatch"></div>
-                      <input
-                        type="text"
-                        id="picked-color-hex"
-                        class="text-input"
-                        readonly
-                        value="#000000"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="color-replace-controls">
-                  <div class="setting-group">
-                    <label for="target-color-input">Replace With</label>
-                    <div class="color-info-row">
-                      <input
-                        type="color"
-                        id="target-color-input"
-                        value="#ff0000"
-                      />
-                      <input
-                        type="text"
-                        id="target-color-hex"
-                        class="text-input"
-                        value="#ff0000"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="setting-group">
-                    <label for="tolerance-slider"
-                      >Tolerance: <span id="tolerance-value">20</span></label
-                    >
-                    <input
-                      type="range"
-                      id="tolerance-slider"
-                      min="0"
-                      max="100"
-                      value="20"
-                      class="slider"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original (Click to Pick Color)</h3>
-                  <div class="canvas-wrapper">
-                    <canvas id="color-canvas"></canvas>
-                  </div>
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="color-result-wrapper">
-                    <img id="color-result-preview" src="" alt="Result" />
-                    <div id="color-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="color-loading-text">Processing...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button id="replace-color-btn" class="btn primary">
-                  Replace Color
-                </button>
-                <button
-                  id="swap-colors-btn"
-                  class="btn primary"
-                  style="background-color: var(--secondary-color)"
-                >
-                  Swap Colors
-                </button>
-                <button id="color-download-btn" class="btn secondary hidden">
-                  Download Result
-                </button>
-                <button id="color-reset-btn" class="btn ghost">Reset</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="color-swap-section" class="tab-content hidden">
-          <header>
-            <h1>Color Swap</h1>
-          </header>
-
-          <div class="tool-section">
-            <p>Swap two colors in your image.</p>
-
-            <div class="upload-container" id="swap-drop-zone">
-              <input type="file" id="swap-file-input" accept="image/*" hidden />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
-            </div>
-
-            <div id="swap-preview-container" class="hidden">
-              <div class="settings-panel">
-                <div class="color-picker-display">
-                  <div class="setting-group">
-                    <label>Color A (Pick from Image)</label>
-                    <div class="color-info-row active-picker">
-                      <div id="swap-color-a-swatch" class="color-swatch"></div>
-                      <input
-                        type="text"
-                        id="swap-color-a-hex"
-                        class="text-input"
-                        readonly
-                        value="#000000"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="setting-group">
-                    <label>Color B (Pick from Image)</label>
-                    <div class="color-info-row">
-                      <div
-                        id="swap-color-b-swatch"
-                        class="color-swatch"
-                        style="background-color: #ffffff"
-                      ></div>
-                      <input
-                        type="text"
-                        id="swap-color-b-hex"
-                        class="text-input"
-                        readonly
-                        value="#FFFFFF"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="color-replace-controls">
-                  <div class="setting-group">
-                    <label for="swap-tolerance-slider"
-                      >Tolerance:
-                      <span id="swap-tolerance-value">20</span></label
-                    >
-                    <input
-                      type="range"
-                      id="swap-tolerance-slider"
-                      min="0"
-                      max="100"
-                      value="20"
-                      class="slider"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Original (Click to Pick)</h3>
-                  <div class="canvas-wrapper">
-                    <canvas id="swap-canvas"></canvas>
-                  </div>
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="swap-result-wrapper" class="hidden">
-                    <img id="swap-result-preview" src="" alt="Result" />
-                    <div id="swap-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="swap-loading-text">Swapping...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button id="swap-btn" class="btn primary">Swap Colors</button>
-                <button id="swap-download-btn" class="btn secondary hidden">
-                  Download Result
-                </button>
-                <button id="swap-reset-btn" class="btn ghost">Reset</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="edit-section" class="tab-content hidden">
-          <header>
-            <h1>Image Manipulation</h1>
-          </header>
-
-          <div class="tool-section">
-            <div class="upload-container" id="edit-drop-zone">
-              <input type="file" id="edit-file-input" accept="image/*" hidden />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
-            </div>
-
-            <div id="edit-preview-container" class="hidden">
-              <div class="edit-tabs">
-                <button class="edit-tab active" data-edit-tab="crop">
-                  Crop
-                </button>
-                <button class="edit-tab" data-edit-tab="rotate">Rotate</button>
-                <button class="edit-tab" data-edit-tab="flip">Flip</button>
-              </div>
-
-              <div class="settings-panel">
-                <div id="edit-content-crop" class="edit-tab-content">
-                  <div class="setting-group">
-                    <label>Crop Settings</label>
-                    <div
-                      class="setting-row"
-                      style="gap: 0.5rem; margin-bottom: 0.5rem"
-                    >
-                      <select id="crop-aspect-ratio" class="select-input">
-                        <option value="free">Free</option>
-                        <option value="1:1">1:1 (Square)</option>
+                      <label for="v2g-fps-select">Frame Rate (FPS)</label>
+                      <select id="v2g-fps-select" class="select-input">
+                        <option value="5">5 FPS (Smallest file size)</option>
+                        <option value="10" selected>10 FPS (Balanced, recommended)</option>
+                        <option value="12">12 FPS (Standard animation)</option>
+                        <option value="15">15 FPS (Smooth)</option>
+                        <option value="20">20 FPS (High smoothness)</option>
+                        <option value="24">24 FPS (Cinematic)</option>
+                        <option value="30">30 FPS (Ultra smooth, larger file)</option>
                       </select>
-                      <select id="crop-shape" class="select-input">
-                        <option value="rect">Rectangle</option>
-                        <option value="round">Round</option>
+                    </div>
+
+                    <div class="setting-group">
+                      <label for="v2g-width-select">Resolution / Max Width</label>
+                      <select id="v2g-width-select" class="select-input">
+                        <option value="original">Original Video Width</option>
+                        <option value="720">720px (HD)</option>
+                        <option value="480" selected>480px (Recommended)</option>
+                        <option value="360">360px (Compact)</option>
+                        <option value="240">240px (Small)</option>
+                        <option value="custom">Custom Width</option>
                       </select>
-                      <button id="reset-crop-btn" class="btn ghost btn-sm">
-                        Reset Crop
-                      </button>
                     </div>
-                  </div>
-                </div>
 
-                <div id="edit-content-rotate" class="edit-tab-content hidden">
-                  <div class="setting-group">
-                    <label>Rotation</label>
-                    <div class="setting-row" style="gap: 0.5rem">
-                      <button id="rotate-left-btn" class="btn ghost btn-sm">
-                        Rotate Left 90°
-                      </button>
-                      <button id="rotate-right-btn" class="btn ghost btn-sm">
-                        Rotate Right 90°
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="edit-content-flip" class="edit-tab-content hidden">
-                  <div class="setting-group">
-                    <label>Flip</label>
-                    <div class="setting-row" style="gap: 0.5rem">
-                      <button id="flip-h-btn" class="btn ghost btn-sm">
-                        Flip Horizontal
-                      </button>
-                      <button id="flip-v-btn" class="btn ghost btn-sm">
-                        Flip Vertical
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="preview-grid side-by-side">
-                <div class="preview-item">
-                  <h3>Editor</h3>
-                  <div class="canvas-wrapper">
-                    <canvas id="edit-canvas"></canvas>
-                  </div>
-                </div>
-                <div class="preview-item">
-                  <h3>Result</h3>
-                  <div id="edit-result-wrapper">
-                    <img id="edit-result-preview" src="" alt="Result" />
-                    <div id="edit-loading-overlay" class="hidden">
-                      <div class="spinner"></div>
-                      <p id="edit-loading-text">Processing...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="actions">
-                <button id="apply-edit-btn" class="btn primary">
-                  Apply Changes
-                </button>
-                <button id="edit-download-btn" class="btn secondary hidden">
-                  Download Result
-                </button>
-                <button id="edit-reset-btn" class="btn ghost">Reset All</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="favicon-gen-section" class="tab-content hidden">
-          <header>
-            <h1>Favicon Generator</h1>
-          </header>
-
-          <div class="tool-section">
-            <p>Upload an image to generate favicons in all standard sizes.</p>
-
-            <div class="upload-container" id="favicon-drop-zone">
-              <input
-                type="file"
-                id="favicon-file-input"
-                accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif, image/avif, image/tiff"
-                hidden
-              />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
-            </div>
-
-            <div id="favicon-preview-container" class="hidden">
-              <div class="favicon-layout">
-                <div class="favicon-source">
-                  <h3>Original Image</h3>
-                  <img id="favicon-original-preview" src="" alt="Original" />
-                  <div class="setting-group" style="margin-top: 1rem">
-                    <label
-                      for="favicon-shape"
-                      style="
-                        display: block;
-                        margin-bottom: 0.5rem;
-                        color: var(--text-secondary);
-                      "
-                      >Shape</label
-                    >
-                    <select
-                      id="favicon-shape"
-                      class="select-input"
-                      style="width: 100%"
-                    >
-                      <option value="square">Square</option>
-                      <option value="rounded">Rounded Corners</option>
-                      <option value="circle">Circle</option>
-                    </select>
-
-                    <div class="divider" style="margin: 1rem 0"></div>
-
-                    <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
-                      Manifest Settings
-                    </h4>
-
-                    <div class="setting-group">
-                      <label for="manifest-name">App Name</label>
-                      <input
-                        type="text"
-                        id="manifest-name"
-                        class="text-input"
-                        placeholder="My App"
-                        style="width: 100%"
-                      />
+                    <div class="setting-group hidden" id="v2g-custom-width-group">
+                      <label for="v2g-custom-width">Custom Width (px)</label>
+                      <input type="number" id="v2g-custom-width" class="number-input" placeholder="e.g. 500" min="50"
+                        max="3840" value="480" />
                     </div>
 
                     <div class="setting-group">
-                      <label for="manifest-short-name">Short Name</label>
-                      <input
-                        type="text"
-                        id="manifest-short-name"
-                        class="text-input"
-                        placeholder="App"
-                        style="width: 100%"
-                      />
-                    </div>
-
-                    <div class="setting-group">
-                      <label for="manifest-description">Description</label>
-                      <textarea
-                        id="manifest-description"
-                        class="text-input"
-                        rows="3"
-                        style="width: 100%; resize: vertical"
-                        placeholder="App description..."
-                      ></textarea>
-                    </div>
-
-                    <div class="setting-group">
-                      <label>Theme Color</label>
-                      <div class="color-info-row">
-                        <input
-                          type="color"
-                          id="manifest-theme-color"
-                          value="#ffffff"
-                        />
-                        <input
-                          type="text"
-                          id="manifest-theme-color-hex"
-                          class="text-input"
-                          value="#ffffff"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="setting-group">
-                      <label>Background Color</label>
-                      <div class="color-info-row">
-                        <input
-                          type="color"
-                          id="manifest-bg-color"
-                          value="#ffffff"
-                        />
-                        <input
-                          type="text"
-                          id="manifest-bg-color-hex"
-                          class="text-input"
-                          value="#ffffff"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="setting-group">
-                      <label>Tile Color (Windows)</label>
-                      <div class="color-info-row">
-                        <input
-                          type="color"
-                          id="manifest-tile-color"
-                          value="#ffffff"
-                        />
-                        <input
-                          type="text"
-                          id="manifest-tile-color-hex"
-                          class="text-input"
-                          value="#ffffff"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="divider" style="margin: 1rem 0"></div>
-
-                    <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
-                      Additional Files & SEO
-                    </h4>
-
-                    <div class="setting-group">
-                      <label for="manifest-site-url">Site URL</label>
-                      <input
-                        type="text"
-                        id="manifest-site-url"
-                        class="text-input"
-                        placeholder="https://www.example.com"
-                        style="width: 100%"
-                      />
+                      <label for="v2g-quality-select">Color Quality & Dithering</label>
+                      <select id="v2g-quality-select" class="select-input">
+                        <option value="high" selected>High Quality (NeuQuant + Dithering)</option>
+                        <option value="fast">Fast (Lower quantization sample)</option>
+                      </select>
                     </div>
 
                     <div class="setting-group checkbox-group">
-                      <input type="checkbox" id="generate-sitemap" checked />
-                      <label for="generate-sitemap">Generate Sitemap</label>
+                      <input type="checkbox" id="v2g-loop-checkbox" checked />
+                      <label for="v2g-loop-checkbox">Loop GIF Infinitely</label>
                     </div>
-
-                    <div class="setting-group checkbox-group">
-                      <input type="checkbox" id="generate-robots" checked />
-                      <label for="generate-robots">Generate Robots.txt</label>
-                    </div>
-
-                    <div class="setting-group checkbox-group">
-                      <input
-                        type="checkbox"
-                        id="generate-browserconfig"
-                        checked
-                      />
-                      <label for="generate-browserconfig"
-                        >Generate Browserconfig.xml</label
-                      >
-                    </div>
-
-                    <button
-                      id="favicon-regenerate-btn"
-                      class="btn primary"
-                      style="width: 100%; margin-top: 1rem"
-                    >
-                      Regenerate Manifest
-                    </button>
-
-                    <button
-                      id="favicon-reset-btn"
-                      class="btn ghost"
-                      style="width: 100%; margin-top: 0.5rem"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-
-                <div class="favicon-results">
-                  <h3>Generated Favicons</h3>
-                  <div class="favicon-grid" id="favicon-grid">
-                    <!-- Favicon items will be injected here -->
-                  </div>
-                  <div class="actions" style="margin-top: 2rem">
-                    <button
-                      id="favicon-download-all-btn"
-                      class="btn primary hidden"
-                    >
-                      Download All (ZIP)
-                    </button>
                   </div>
 
-                  <div
-                    id="favicon-html-container"
-                    class="hidden"
-                    style="margin-top: 2rem"
-                  >
-                    <h3>HTML Snippet</h3>
-                    <div class="code-block-wrapper">
-                      <pre><code id="favicon-html-code"></code></pre>
-                      <button
-                        id="favicon-copy-html-btn"
-                        class="btn ghost btn-sm"
-                      >
-                        Copy HTML
-                      </button>
+                  <!-- Progress Bar -->
+                  <div id="v2g-progress-container" class="hidden">
+                    <div class="progress-bar-wrapper">
+                      <div class="progress-bar" id="v2g-progress-bar" style="width: 0%"></div>
                     </div>
+                    <div class="progress-info">
+                      <span id="v2g-progress-text">Processing frames...</span>
+                      <span id="v2g-progress-percent">0%</span>
+                    </div>
+                  </div>
+
+                  <!-- GIF Result Preview -->
+                  <div id="v2g-result-container" class="hidden">
+                    <div class="result-header">
+                      <h4>Generated GIF</h4>
+                      <span id="v2g-result-meta" class="badge success-badge">0 KB • 0x0</span>
+                    </div>
+                    <div class="gif-result-preview-wrapper">
+                      <img id="v2g-result-img" alt="Generated GIF" />
+                    </div>
+                  </div>
+
+                  <div class="actions">
+                    <button id="v2g-convert-btn" class="btn primary">
+                      <i data-lucide="refresh-cw"></i> Convert to GIF
+                    </button>
+                    <button id="v2g-download-btn" class="btn secondary hidden">
+                      <i data-lucide="download"></i> Save GIF
+                    </button>
+                    <button id="v2g-reset-btn" class="btn ghost">Reset</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
+      <section id="resizer-section" class="tab-content hidden">
+        <header>
+          <h1>Image Resizer</h1>
+        </header>
 
-        <section id="optimization-section" class="tab-content hidden">
-          <header>
-            <h1>Optimization</h1>
-          </header>
+        <div class="tool-section">
+          <p>Resize your images to specific dimensions.</p>
 
-          <div class="tool-section">
-            <p>
-              Optimize your images to reduce file size while maintaining
-              quality.
-            </p>
-
-            <div class="upload-container" id="opt-drop-zone">
-              <input
-                type="file"
-                id="opt-file-input"
-                accept="image/*"
-                multiple
-                hidden
-              />
-              <div class="upload-box">
-                <div class="upload-icon"><i data-lucide="upload"></i></div>
-                <p>Drag & drop an image or <span>browse</span></p>
-                <p class="upload-hint">Supports JPG, PNG, WebP</p>
-              </div>
+          <div class="upload-container" id="resize-drop-zone">
+            <input type="file" id="resize-file-input" accept="image/*" hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP, TIFF, AVIF</p>
             </div>
+          </div>
 
-            <div id="opt-preview-container" class="hidden">
-              <div class="settings-panel">
+          <div id="resize-preview-container" class="hidden">
+            <div class="settings-panel resizer-settings">
+              <div class="settings-left">
+                <div class="setting-row">
+                  <div class="setting-group">
+                    <label for="resize-width">Width (px)</label>
+                    <input type="number" id="resize-width" class="number-input" placeholder="Width" />
+                  </div>
+                  <div class="setting-group">
+                    <label for="resize-height">Height (px)</label>
+                    <input type="number" id="resize-height" class="number-input" placeholder="Height" />
+                  </div>
+                </div>
+                <div class="setting-group checkbox-group">
+                  <input type="checkbox" id="lock-aspect-ratio" checked />
+                  <label for="lock-aspect-ratio">Lock Aspect Ratio</label>
+                </div>
+              </div>
+
+              <div class="settings-right">
                 <div class="setting-group">
-                  <label for="opt-preset-select">Optimization Preset</label>
-                  <select id="opt-preset-select" class="select-input">
-                    <option value="balanced">Balanced (Recommended)</option>
-                    <option value="small">Smallest Size (Lower Quality)</option>
-                    <option value="high">Highest Quality (Larger Size)</option>
+                  <label for="resize-fit">Fit Mode</label>
+                  <select id="resize-fit" class="select-input">
+                    <option value="cover">Cover (Crop to fit)</option>
+                    <option value="contain">Contain (Add padding)</option>
+                    <option value="fill">Fill (Stretch)</option>
+                    <option value="inside">Inside (Keep aspect)</option>
+                    <option value="outside">Outside (Keep aspect)</option>
                   </select>
                 </div>
+
                 <div class="setting-group">
-                  <label for="opt-format-select">Output Format</label>
-                  <select id="opt-format-select" class="select-input">
-                    <option value="">Keep Original</option>
+                  <label for="resize-format">Output Format</label>
+                  <select id="resize-format" class="select-input">
+                    <option value="">Same as Original</option>
                     <option value="jpg">JPEG</option>
                     <option value="png">PNG</option>
                     <option value="webp">WebP</option>
                     <option value="avif">AVIF</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <div class="preview-grid side-by-side">
+              <div class="preview-item">
+                <h3>Original</h3>
+                <img id="resize-original-preview" src="" alt="Original" />
+                <div class="image-info" id="resize-original-info"></div>
+              </div>
+              <div class="preview-item">
+                <h3>Result</h3>
+                <div id="resize-result-wrapper">
+                  <img id="resize-result-preview" src="" alt="Result" />
+                  <div id="resize-loading-overlay" class="hidden">
+                    <div class="spinner"></div>
+                    <p id="resize-loading-text">Resizing...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="resize-process-btn" class="btn primary">
+                Resize Image
+              </button>
+              <button id="resize-download-btn" class="btn secondary hidden">
+                Download Result
+              </button>
+              <button id="resize-reset-btn" class="btn ghost">Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="color-tools-section" class="tab-content hidden">
+        <header>
+          <h1>Pick & Replace</h1>
+        </header>
+
+        <div class="tool-section">
+          <p>Pick a color from your image or replace a specific color.</p>
+
+          <div class="upload-container" id="color-drop-zone">
+            <input type="file" id="color-file-input" accept="image/*" hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
+            </div>
+          </div>
+
+          <div id="color-preview-container" class="hidden">
+            <div class="settings-panel">
+              <div class="color-picker-display">
                 <div class="setting-group">
-                  <label for="opt-quality-slider"
-                    >Quality: <span id="opt-quality-value">80</span>%</label
-                  >
-                  <input
-                    type="range"
-                    id="opt-quality-slider"
-                    min="1"
-                    max="100"
-                    value="80"
-                    class="slider"
-                  />
+                  <label>Picked Color</label>
+                  <div class="color-info-row">
+                    <div id="picked-color-swatch" class="color-swatch"></div>
+                    <input type="text" id="picked-color-hex" class="text-input" readonly value="#000000" />
+                  </div>
                 </div>
               </div>
 
-              <div class="batch-summary hidden" id="opt-batch-summary"></div>
-              <div id="opt-file-list" class="file-list">
-                <!-- File items will be injected here -->
-              </div>
+              <div class="color-replace-controls">
+                <div class="setting-group">
+                  <label for="target-color-input">Replace With</label>
+                  <div class="color-info-row">
+                    <input type="color" id="target-color-input" value="#ff0000" />
+                    <input type="text" id="target-color-hex" class="text-input" value="#ff0000" />
+                  </div>
+                </div>
 
-              <div class="actions">
-                <button id="opt-process-btn" class="btn primary">
-                  Optimize Images (All)
-                </button>
-                <button id="opt-download-btn" class="btn secondary hidden">
-                  Download All (ZIP)
-                </button>
-                <button id="opt-reset-btn" class="btn ghost">Reset</button>
+                <div class="setting-group">
+                  <label for="tolerance-slider">Tolerance: <span id="tolerance-value">20</span></label>
+                  <input type="range" id="tolerance-slider" min="0" max="100" value="20" class="slider" />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        <section id="settings-section" class="tab-content hidden">
-          <header><h1>Settings</h1></header>
-          <div class="tool-section">
-            <div class="setting-group">
-              <label for="theme-select">Theme</label>
-              <select id="theme-select" class="select-input">
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-              </select>
-            </div>
-            <div class="setting-group">
-              <label for="default-format-select"
-                >Default Conversion Format</label
-              >
-              <select id="default-format-select" class="select-input">
-                <option value="jpg">JPEG</option>
-                <option value="png">PNG</option>
-                <option value="webp">WebP</option>
-                <option value="tiff">TIFF</option>
-                <option value="gif">GIF</option>
-                <option value="avif">AVIF</option>
-                <option value="svg">SVG</option>
-              </select>
-            </div>
-            <div class="setting-group">
-              <label for="default-quality-slider"
-                >Default Quality:
-                <span id="default-quality-value">100</span>%</label
-              >
-              <input
-                type="range"
-                id="default-quality-slider"
-                min="1"
-                max="100"
-                value="100"
-                class="slider"
-              />
-            </div>
-            <div class="divider"></div>
-            <div class="setting-group">
-              <label for="remove-bg-key-input">remove.bg API Key</label>
-              <div class="setting-row" style="gap: 0.5rem">
-                <input
-                  type="password"
-                  id="remove-bg-key-input"
-                  class="text-input"
-                  placeholder="Enter your API key"
-                  style="flex: 1"
-                />
-                <button id="save-api-key-btn" class="btn secondary">
-                  Save Key
-                </button>
+
+            <div class="preview-grid side-by-side">
+              <div class="preview-item">
+                <h3>Original (Click to Pick Color)</h3>
+                <div class="canvas-wrapper">
+                  <canvas id="color-canvas"></canvas>
+                </div>
               </div>
-              <p class="upload-hint">
-                Get your API key at
-                <a href="https://www.remove.bg/api" target="_blank"
-                  >remove.bg/api</a
-                >. Your key is stored securely.
-              </p>
+              <div class="preview-item">
+                <h3>Result</h3>
+                <div id="color-result-wrapper">
+                  <img id="color-result-preview" src="" alt="Result" />
+                  <div id="color-loading-overlay" class="hidden">
+                    <div class="spinner"></div>
+                    <p id="color-loading-text">Processing...</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="actions" style="margin-top: 2rem">
-              <button id="save-settings-btn" class="btn primary">
-                Save Settings
+
+            <div class="actions">
+              <button id="replace-color-btn" class="btn primary">
+                Replace Color
               </button>
-              <button id="clear-cache-btn" class="btn ghost">
-                Clear Cache
+              <button id="swap-colors-btn" class="btn primary" style="background-color: var(--secondary-color)">
+                Swap Colors
               </button>
+              <button id="color-download-btn" class="btn secondary hidden">
+                Download Result
+              </button>
+              <button id="color-reset-btn" class="btn ghost">Reset</button>
             </div>
-          </div>
-        </section>
-
-        <!-- About Developer Section -->
-        <section id="about-section" class="tab-content hidden">
-          <header>
-            <h1>About Developer</h1>
-          </header>
-          <div class="tool-section about-dev-container">
-            <div class="dev-info">
-              <div class="dev-icon-masked">
-                <i data-lucide="user"></i>
-              </div>
-              <h2>Goodnews Anwana</h2>
-              <p class="dev-tagline">Full Stack Developer & UI/UX Enthusiast</p>
-              <p class="dev-description">
-                Passionate about building high-quality desktop, mobile and web
-                applications with a focus on performance and user experience.
-              </p>
-              <div class="dev-links">
-                <a href="https://goodnewscodes.github.io" target="_blank">
-                  Portfolio <i data-lucide="external-link"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- Wizard Modal Container (Global) -->
-    <div id="wizard-modal" class="modal hidden">
-      <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <div id="wizard-step-container"></div>
-      </div>
-    </div>
-
-    <script src="renderer.js"></script>
-    <!-- Onboarding Overlay -->
-    <div id="onboarding-overlay" class="onboarding-overlay hidden">
-      <div class="onboarding-card">
-        <button id="onboarding-skip" class="onboarding-skip">Skip</button>
-
-        <div class="onboarding-steps">
-          <!-- Step 1: Welcome -->
-          <div class="onboarding-step active" data-step="1">
-            <img
-              src="icon.png"
-              alt="IMGpro Logo"
-              class="onboarding-welcome-logo"
-            />
-            <h2>Welcome to IMGpro</h2>
-            <p>
-              Your all-in-one desktop companion for professional image
-              processing. Let's take a quick tour of what you can do.
-            </p>
-          </div>
-
-          <!-- Step 2: AI Background Removal -->
-          <div class="onboarding-step" data-step="2">
-            <div class="onboarding-icon-large">
-              <i data-lucide="scissors"></i>
-            </div>
-            <h2>AI Background Removal</h2>
-            <p>
-              Remove backgrounds from any image instantly using our powerful AI.
-              No more tedious manual masking.
-            </p>
-          </div>
-
-          <!-- Step 3: Advanced Tools -->
-          <div class="onboarding-step" data-step="3">
-            <div class="onboarding-icon-large">
-              <i data-lucide="refresh-cw"></i>
-            </div>
-            <h2>Advanced Image Tools</h2>
-            <p>
-              Convert, resize, and manipulate images with precision. Support for
-              JPG, PNG, WebP, AVIF, and even ICNS.
-            </p>
-          </div>
-
-          <!-- Step 4: Favicon & Color Tools -->
-          <div class="onboarding-step" data-step="4">
-            <div class="onboarding-icon-large">
-              <i data-lucide="palette"></i>
-            </div>
-            <h2>Favicon & Color Tools</h2>
-            <p>
-              Generate professional favicons or use our Pick & Replace tool to
-              precisely manage colors in your designs.
-            </p>
           </div>
         </div>
+      </section>
 
-        <div class="onboarding-footer">
-          <div class="onboarding-dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+      <section id="color-swap-section" class="tab-content hidden">
+        <header>
+          <h1>Color Swap</h1>
+        </header>
+
+        <div class="tool-section">
+          <p>Swap two colors in your image.</p>
+
+          <div class="upload-container" id="swap-drop-zone">
+            <input type="file" id="swap-file-input" accept="image/*" hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
+            </div>
           </div>
-          <div class="onboarding-actions">
-            <button id="onboarding-prev" class="btn ghost hidden">Back</button>
-            <button id="onboarding-next" class="btn primary">Next</button>
-            <button id="onboarding-finish" class="btn primary hidden">
-              Get Started
+
+          <div id="swap-preview-container" class="hidden">
+            <div class="settings-panel">
+              <div class="color-picker-display">
+                <div class="setting-group">
+                  <label>Color A (Pick from Image)</label>
+                  <div class="color-info-row active-picker">
+                    <div id="swap-color-a-swatch" class="color-swatch"></div>
+                    <input type="text" id="swap-color-a-hex" class="text-input" readonly value="#000000" />
+                  </div>
+                </div>
+
+                <div class="setting-group">
+                  <label>Color B (Pick from Image)</label>
+                  <div class="color-info-row">
+                    <div id="swap-color-b-swatch" class="color-swatch" style="background-color: #ffffff"></div>
+                    <input type="text" id="swap-color-b-hex" class="text-input" readonly value="#FFFFFF" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="color-replace-controls">
+                <div class="setting-group">
+                  <label for="swap-tolerance-slider">Tolerance:
+                    <span id="swap-tolerance-value">20</span></label>
+                  <input type="range" id="swap-tolerance-slider" min="0" max="100" value="20" class="slider" />
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-grid side-by-side">
+              <div class="preview-item">
+                <h3>Original (Click to Pick)</h3>
+                <div class="canvas-wrapper">
+                  <canvas id="swap-canvas"></canvas>
+                </div>
+              </div>
+              <div class="preview-item">
+                <h3>Result</h3>
+                <div id="swap-result-wrapper" class="hidden">
+                  <img id="swap-result-preview" src="" alt="Result" />
+                  <div id="swap-loading-overlay" class="hidden">
+                    <div class="spinner"></div>
+                    <p id="swap-loading-text">Swapping...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="swap-btn" class="btn primary">Swap Colors</button>
+              <button id="swap-download-btn" class="btn secondary hidden">
+                Download Result
+              </button>
+              <button id="swap-reset-btn" class="btn ghost">Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="edit-section" class="tab-content hidden">
+        <header>
+          <h1>Image Manipulation</h1>
+        </header>
+
+        <div class="tool-section">
+          <div class="upload-container" id="edit-drop-zone">
+            <input type="file" id="edit-file-input" accept="image/*" hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
+            </div>
+          </div>
+
+          <div id="edit-preview-container" class="hidden">
+            <div class="edit-tabs">
+              <button class="edit-tab active" data-edit-tab="crop">
+                Crop
+              </button>
+              <button class="edit-tab" data-edit-tab="rotate">Rotate</button>
+              <button class="edit-tab" data-edit-tab="flip">Flip</button>
+            </div>
+
+            <div class="settings-panel">
+              <div id="edit-content-crop" class="edit-tab-content">
+                <div class="setting-group">
+                  <label>Crop Settings</label>
+                  <div class="setting-row" style="gap: 0.5rem; margin-bottom: 0.5rem">
+                    <select id="crop-aspect-ratio" class="select-input">
+                      <option value="free">Free</option>
+                      <option value="1:1">1:1 (Square)</option>
+                    </select>
+                    <select id="crop-shape" class="select-input">
+                      <option value="rect">Rectangle</option>
+                      <option value="round">Round</option>
+                    </select>
+                    <button id="reset-crop-btn" class="btn ghost btn-sm">
+                      Reset Crop
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="edit-content-rotate" class="edit-tab-content hidden">
+                <div class="setting-group">
+                  <label>Rotation</label>
+                  <div class="setting-row" style="gap: 0.5rem">
+                    <button id="rotate-left-btn" class="btn ghost btn-sm">
+                      Rotate Left 90°
+                    </button>
+                    <button id="rotate-right-btn" class="btn ghost btn-sm">
+                      Rotate Right 90°
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="edit-content-flip" class="edit-tab-content hidden">
+                <div class="setting-group">
+                  <label>Flip</label>
+                  <div class="setting-row" style="gap: 0.5rem">
+                    <button id="flip-h-btn" class="btn ghost btn-sm">
+                      Flip Horizontal
+                    </button>
+                    <button id="flip-v-btn" class="btn ghost btn-sm">
+                      Flip Vertical
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-grid side-by-side">
+              <div class="preview-item">
+                <h3>Editor</h3>
+                <div class="canvas-wrapper">
+                  <canvas id="edit-canvas"></canvas>
+                </div>
+              </div>
+              <div class="preview-item">
+                <h3>Result</h3>
+                <div id="edit-result-wrapper">
+                  <img id="edit-result-preview" src="" alt="Result" />
+                  <div id="edit-loading-overlay" class="hidden">
+                    <div class="spinner"></div>
+                    <p id="edit-loading-text">Processing...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="apply-edit-btn" class="btn primary">
+                Apply Changes
+              </button>
+              <button id="edit-download-btn" class="btn secondary hidden">
+                Download Result
+              </button>
+              <button id="edit-reset-btn" class="btn ghost">Reset All</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="favicon-gen-section" class="tab-content hidden">
+        <header>
+          <h1>Favicon Generator</h1>
+        </header>
+
+        <div class="tool-section">
+          <p>Upload an image to generate favicons in all standard sizes.</p>
+
+          <div class="upload-container" id="favicon-drop-zone">
+            <input type="file" id="favicon-file-input"
+              accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif, image/avif, image/tiff" hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
+            </div>
+          </div>
+
+          <div id="favicon-preview-container" class="hidden">
+            <div class="favicon-layout">
+              <div class="favicon-source">
+                <h3>Original Image</h3>
+                <img id="favicon-original-preview" src="" alt="Original" />
+                <div class="setting-group" style="margin-top: 1rem">
+                  <label for="favicon-shape" style="
+                        display: block;
+                        margin-bottom: 0.5rem;
+                        color: var(--text-secondary);
+                      ">Shape</label>
+                  <select id="favicon-shape" class="select-input" style="width: 100%">
+                    <option value="square">Square</option>
+                    <option value="rounded">Rounded Corners</option>
+                    <option value="circle">Circle</option>
+                  </select>
+
+                  <div class="divider" style="margin: 1rem 0"></div>
+
+                  <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
+                    Manifest Settings
+                  </h4>
+
+                  <div class="setting-group">
+                    <label for="manifest-name">App Name</label>
+                    <input type="text" id="manifest-name" class="text-input" placeholder="My App" style="width: 100%" />
+                  </div>
+
+                  <div class="setting-group">
+                    <label for="manifest-short-name">Short Name</label>
+                    <input type="text" id="manifest-short-name" class="text-input" placeholder="App"
+                      style="width: 100%" />
+                  </div>
+
+                  <div class="setting-group">
+                    <label for="manifest-description">Description</label>
+                    <textarea id="manifest-description" class="text-input" rows="3"
+                      style="width: 100%; resize: vertical" placeholder="App description..."></textarea>
+                  </div>
+
+                  <div class="setting-group">
+                    <label>Theme Color</label>
+                    <div class="color-info-row">
+                      <input type="color" id="manifest-theme-color" value="#ffffff" />
+                      <input type="text" id="manifest-theme-color-hex" class="text-input" value="#ffffff" />
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <label>Background Color</label>
+                    <div class="color-info-row">
+                      <input type="color" id="manifest-bg-color" value="#ffffff" />
+                      <input type="text" id="manifest-bg-color-hex" class="text-input" value="#ffffff" />
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <label>Tile Color (Windows)</label>
+                    <div class="color-info-row">
+                      <input type="color" id="manifest-tile-color" value="#ffffff" />
+                      <input type="text" id="manifest-tile-color-hex" class="text-input" value="#ffffff" />
+                    </div>
+                  </div>
+
+                  <div class="divider" style="margin: 1rem 0"></div>
+
+                  <h4 style="margin-bottom: 1rem; color: var(--text-primary)">
+                    Additional Files & SEO
+                  </h4>
+
+                  <div class="setting-group">
+                    <label for="manifest-site-url">Site URL</label>
+                    <input type="text" id="manifest-site-url" class="text-input" placeholder="https://www.example.com"
+                      style="width: 100%" />
+                  </div>
+
+                  <div class="setting-group checkbox-group">
+                    <input type="checkbox" id="generate-sitemap" checked />
+                    <label for="generate-sitemap">Generate Sitemap</label>
+                  </div>
+
+                  <div class="setting-group checkbox-group">
+                    <input type="checkbox" id="generate-robots" checked />
+                    <label for="generate-robots">Generate Robots.txt</label>
+                  </div>
+
+                  <div class="setting-group checkbox-group">
+                    <input type="checkbox" id="generate-browserconfig" checked />
+                    <label for="generate-browserconfig">Generate Browserconfig.xml</label>
+                  </div>
+
+                  <button id="favicon-regenerate-btn" class="btn primary" style="width: 100%; margin-top: 1rem">
+                    Regenerate Manifest
+                  </button>
+
+                  <button id="favicon-reset-btn" class="btn ghost" style="width: 100%; margin-top: 0.5rem">
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <div class="favicon-results">
+                <h3>Generated Favicons</h3>
+                <div class="favicon-grid" id="favicon-grid">
+                  <!-- Favicon items will be injected here -->
+                </div>
+                <div class="actions" style="margin-top: 2rem">
+                  <button id="favicon-download-all-btn" class="btn primary hidden">
+                    Download All (ZIP)
+                  </button>
+                </div>
+
+                <div id="favicon-html-container" class="hidden" style="margin-top: 2rem">
+                  <h3>HTML Snippet</h3>
+                  <div class="code-block-wrapper">
+                    <pre><code id="favicon-html-code"></code></pre>
+                    <button id="favicon-copy-html-btn" class="btn ghost btn-sm">
+                      Copy HTML
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="optimization-section" class="tab-content hidden">
+        <header>
+          <h1>Optimization</h1>
+        </header>
+
+        <div class="tool-section">
+          <p>
+            Optimize your images to reduce file size while maintaining
+            quality.
+          </p>
+
+          <div class="upload-container" id="opt-drop-zone">
+            <input type="file" id="opt-file-input" accept="image/*" multiple hidden />
+            <div class="upload-box">
+              <div class="upload-icon"><i data-lucide="upload"></i></div>
+              <p>Drag & drop an image or <span>browse</span></p>
+              <p class="upload-hint">Supports JPG, PNG, WebP</p>
+            </div>
+          </div>
+
+          <div id="opt-preview-container" class="hidden">
+            <div class="settings-panel">
+              <div class="setting-group">
+                <label for="opt-preset-select">Optimization Preset</label>
+                <select id="opt-preset-select" class="select-input">
+                  <option value="balanced">Balanced (Recommended)</option>
+                  <option value="small">Smallest Size (Lower Quality)</option>
+                  <option value="high">Highest Quality (Larger Size)</option>
+                </select>
+              </div>
+              <div class="setting-group">
+                <label for="opt-format-select">Output Format</label>
+                <select id="opt-format-select" class="select-input">
+                  <option value="">Keep Original</option>
+                  <option value="jpg">JPEG</option>
+                  <option value="png">PNG</option>
+                  <option value="webp">WebP</option>
+                  <option value="avif">AVIF</option>
+                </select>
+              </div>
+              <div class="setting-group">
+                <label for="opt-quality-slider">Quality: <span id="opt-quality-value">80</span>%</label>
+                <input type="range" id="opt-quality-slider" min="1" max="100" value="80" class="slider" />
+              </div>
+            </div>
+
+            <div class="batch-summary hidden" id="opt-batch-summary"></div>
+            <div id="opt-file-list" class="file-list">
+              <!-- File items will be injected here -->
+            </div>
+
+            <div class="actions">
+              <button id="opt-process-btn" class="btn primary">
+                Optimize Images (All)
+              </button>
+              <button id="opt-download-btn" class="btn secondary hidden">
+                Download All (ZIP)
+              </button>
+              <button id="opt-reset-btn" class="btn ghost">Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="settings-section" class="tab-content hidden">
+        <header>
+          <h1>Settings</h1>
+        </header>
+        <div class="tool-section">
+          <div class="setting-group">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select" class="select-input">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label for="default-format-select">Default Conversion Format</label>
+            <select id="default-format-select" class="select-input">
+              <option value="jpg">JPEG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WebP</option>
+              <option value="tiff">TIFF</option>
+              <option value="gif">GIF</option>
+              <option value="avif">AVIF</option>
+              <option value="svg">SVG</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label for="default-quality-slider">Default Quality:
+              <span id="default-quality-value">100</span>%</label>
+            <input type="range" id="default-quality-slider" min="1" max="100" value="100" class="slider" />
+          </div>
+          <div class="divider"></div>
+          <div class="setting-group">
+            <label for="remove-bg-key-input">remove.bg API Key</label>
+            <div class="setting-row" style="gap: 0.5rem">
+              <input type="password" id="remove-bg-key-input" class="text-input" placeholder="Enter your API key"
+                style="flex: 1" />
+              <button id="save-api-key-btn" class="btn secondary">
+                Save Key
+              </button>
+            </div>
+            <p class="upload-hint">
+              Get your API key at
+              <a href="https://www.remove.bg/api" target="_blank">remove.bg/api</a>. Your key is stored securely.
+            </p>
+          </div>
+          <div class="actions" style="margin-top: 2rem">
+            <button id="save-settings-btn" class="btn primary">
+              Save Settings
+            </button>
+            <button id="clear-cache-btn" class="btn ghost">
+              Clear Cache
             </button>
           </div>
         </div>
+      </section>
+
+      <!-- About Developer Section -->
+      <section id="about-section" class="tab-content hidden">
+        <header>
+          <h1>About Developer</h1>
+        </header>
+        <div class="tool-section about-dev-container">
+          <div class="dev-info">
+            <div class="dev-icon-masked">
+              <i data-lucide="user"></i>
+            </div>
+            <h2>Goodnews Anwana</h2>
+            <p class="dev-tagline">Software Engineer & UI/UX Enthusiast</p>
+            <p class="dev-description">
+              Passionate about building high-quality desktop, mobile and web
+              applications with a focus on performance and user experience.
+            </p>
+            <div class="dev-links">
+              <a href="https://goodnewscodes.github.io" target="_blank">
+                Portfolio <i data-lucide="external-link"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Wizard Modal Container (Global) -->
+  <div id="wizard-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <div id="wizard-step-container"></div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+  <!-- Onboarding Overlay -->
+  <div id="onboarding-overlay" class="onboarding-overlay hidden">
+    <div class="onboarding-card">
+      <button id="onboarding-skip" class="onboarding-skip">Skip</button>
+
+      <div class="onboarding-steps">
+        <!-- Step 1: Welcome -->
+        <div class="onboarding-step active" data-step="1">
+          <img src="icon.png" alt="IMGpro Logo" class="onboarding-welcome-logo" />
+          <h2>Welcome to IMGpro</h2>
+          <p>
+            Your all-in-one desktop companion for professional image
+            processing. Let's take a quick tour of what you can do.
+          </p>
+        </div>
+
+        <!-- Step 2: AI Background Removal -->
+        <div class="onboarding-step" data-step="2">
+          <div class="onboarding-icon-large">
+            <i data-lucide="scissors"></i>
+          </div>
+          <h2>AI Background Removal</h2>
+          <p>
+            Remove backgrounds from any image instantly using our powerful AI.
+            No more tedious manual masking.
+          </p>
+        </div>
+
+        <!-- Step 3: Advanced Tools -->
+        <div class="onboarding-step" data-step="3">
+          <div class="onboarding-icon-large">
+            <i data-lucide="refresh-cw"></i>
+          </div>
+          <h2>Advanced Image Tools</h2>
+          <p>
+            Convert, resize, and manipulate images with precision. Support for
+            JPG, PNG, WebP, AVIF, and even ICNS.
+          </p>
+        </div>
+
+        <!-- Step 4: Favicon & Color Tools -->
+        <div class="onboarding-step" data-step="4">
+          <div class="onboarding-icon-large">
+            <i data-lucide="palette"></i>
+          </div>
+          <h2>Favicon & Color Tools</h2>
+          <p>
+            Generate professional favicons or use our Pick & Replace tool to
+            precisely manage colors in your designs.
+          </p>
+        </div>
+      </div>
+
+      <div class="onboarding-footer">
+        <div class="onboarding-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <div class="onboarding-actions">
+          <button id="onboarding-prev" class="btn ghost hidden">Back</button>
+          <button id="onboarding-next" class="btn primary">Next</button>
+          <button id="onboarding-finish" class="btn primary hidden">
+            Get Started
+          </button>
+        </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

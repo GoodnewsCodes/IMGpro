@@ -28,6 +28,10 @@ import {
   Search,
   User,
   Repeat,
+  Film,
+  Video,
+  Sparkles,
+  Download,
 } from "lucide";
 
 // Sidebar Toggle
@@ -127,6 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
       Search,
       User,
       Repeat,
+      Film,
+      Video,
+      Sparkles,
+      Download,
     },
   });
 

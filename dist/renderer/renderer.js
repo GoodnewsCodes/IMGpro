@@ -27772,7 +27772,351 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
 
   // src/renderer/features/image-conversion.ts
   var import_jszip2 = __toESM(require_jszip_min());
+
+  // src/renderer/features/gif-encoder.ts
+  var GifEncoder = class {
+    width;
+    height;
+    loopCount;
+    // 0 = infinite loop
+    buffer;
+    capacity;
+    length = 0;
+    constructor(width, height, loopCount = 0) {
+      this.width = Math.round(width);
+      this.height = Math.round(height);
+      this.loopCount = loopCount;
+      this.capacity = 1024 * 1024;
+      this.buffer = new Uint8Array(this.capacity);
+      this.writeHeader();
+    }
+    ensureCapacity(additionalBytes) {
+      if (this.length + additionalBytes > this.capacity) {
+        let newCapacity = Math.max(this.capacity * 2, this.length + additionalBytes + 1024 * 512);
+        const newBuffer = new Uint8Array(newCapacity);
+        newBuffer.set(this.buffer.subarray(0, this.length));
+        this.buffer = newBuffer;
+        this.capacity = newCapacity;
+      }
+    }
+    writeByte(b) {
+      if (this.length >= this.capacity) this.ensureCapacity(1);
+      this.buffer[this.length++] = b;
+    }
+    writeBytes(bytes) {
+      this.ensureCapacity(bytes.length);
+      for (let i = 0; i < bytes.length; i++) {
+        this.buffer[this.length++] = bytes[i];
+      }
+    }
+    writeShort(val) {
+      this.ensureCapacity(2);
+      this.buffer[this.length++] = val & 255;
+      this.buffer[this.length++] = val >> 8 & 255;
+    }
+    writeString(str) {
+      this.ensureCapacity(str.length);
+      for (let i = 0; i < str.length; i++) {
+        this.buffer[this.length++] = str.charCodeAt(i);
+      }
+    }
+    writeHeader() {
+      this.writeString("GIF89a");
+      this.writeShort(this.width);
+      this.writeShort(this.height);
+      this.writeByte(112);
+      this.writeByte(0);
+      this.writeByte(0);
+      if (this.loopCount >= 0) {
+        this.writeByte(33);
+        this.writeByte(255);
+        this.writeByte(11);
+        this.writeString("NETSCAPE2.0");
+        this.writeByte(3);
+        this.writeByte(1);
+        this.writeShort(this.loopCount);
+        this.writeByte(0);
+      }
+    }
+    addFrame(rgbaData, options = {}) {
+      const delayMs = options.delayMs ?? 100;
+      const dither = options.dither ?? true;
+      const delayHundredths = Math.max(1, Math.round(delayMs / 10));
+      const quantizer = new FastQuantizer(rgbaData, this.width, this.height, options.quality ?? 10);
+      const colorMap = quantizer.getPalette();
+      const numPixels = this.width * this.height;
+      const indexedPixels = new Uint8Array(numPixels);
+      if (dither) {
+        this.applyFastDithering(rgbaData, indexedPixels, quantizer, colorMap);
+      } else {
+        for (let i = 0; i < numPixels; i++) {
+          const p = i * 4;
+          indexedPixels[i] = quantizer.lookup(rgbaData[p], rgbaData[p + 1], rgbaData[p + 2]);
+        }
+      }
+      this.writeByte(33);
+      this.writeByte(249);
+      this.writeByte(4);
+      this.writeByte(4);
+      this.writeShort(delayHundredths);
+      this.writeByte(0);
+      this.writeByte(0);
+      this.writeByte(44);
+      this.writeShort(0);
+      this.writeShort(0);
+      this.writeShort(this.width);
+      this.writeShort(this.height);
+      this.writeByte(135);
+      this.writeBytes(colorMap);
+      const lzwMinCodeSize = 8;
+      this.writeByte(lzwMinCodeSize);
+      this.writeLzwData(lzwMinCodeSize, indexedPixels);
+      this.writeByte(0);
+    }
+    applyFastDithering(rgbaData, indexedPixels, quantizer, colorMap) {
+      const w = this.width;
+      const h = this.height;
+      const rErrors = new Float32Array(w * 2);
+      const gErrors = new Float32Array(w * 2);
+      const bErrors = new Float32Array(w * 2);
+      for (let y = 0; y < h; y++) {
+        const curRow = y % 2 * w;
+        const nextRow = (y + 1) % 2 * w;
+        rErrors.fill(0, nextRow, nextRow + w);
+        gErrors.fill(0, nextRow, nextRow + w);
+        bErrors.fill(0, nextRow, nextRow + w);
+        for (let x = 0; x < w; x++) {
+          const idx = y * w + x;
+          const p = idx * 4;
+          let r = rgbaData[p] + rErrors[curRow + x];
+          let g = rgbaData[p + 1] + gErrors[curRow + x];
+          let b = rgbaData[p + 2] + bErrors[curRow + x];
+          r = r < 0 ? 0 : r > 255 ? 255 : r | 0;
+          g = g < 0 ? 0 : g > 255 ? 255 : g | 0;
+          b = b < 0 ? 0 : b > 255 ? 255 : b | 0;
+          const colorIdx = quantizer.lookup(r, g, b);
+          indexedPixels[idx] = colorIdx;
+          const cPos = colorIdx * 3;
+          const errR = r - colorMap[cPos];
+          const errG = g - colorMap[cPos + 1];
+          const errB = b - colorMap[cPos + 2];
+          if (x + 1 < w) {
+            rErrors[curRow + x + 1] += errR * 7 / 16;
+            gErrors[curRow + x + 1] += errG * 7 / 16;
+            bErrors[curRow + x + 1] += errB * 7 / 16;
+          }
+          if (y + 1 < h) {
+            if (x > 0) {
+              rErrors[nextRow + x - 1] += errR * 3 / 16;
+              gErrors[nextRow + x - 1] += errG * 3 / 16;
+              bErrors[nextRow + x - 1] += errB * 3 / 16;
+            }
+            rErrors[nextRow + x] += errR * 5 / 16;
+            gErrors[nextRow + x] += errG * 5 / 16;
+            bErrors[nextRow + x] += errB * 5 / 16;
+            if (x + 1 < w) {
+              rErrors[nextRow + x + 1] += errR * 1 / 16;
+              gErrors[nextRow + x + 1] += errG * 1 / 16;
+              bErrors[nextRow + x + 1] += errB * 1 / 16;
+            }
+          }
+        }
+      }
+    }
+    writeLzwData(minCodeSize, indexedPixels) {
+      const clearCode = 1 << minCodeSize;
+      const eofCode = clearCode + 1;
+      let curCodeSize = minCodeSize + 1;
+      let maxCode = (1 << curCodeSize) - 1;
+      let nextCode = eofCode + 1;
+      const HASH_SIZE = 5003;
+      const htab = new Int32Array(HASH_SIZE);
+      const codetab = new Int16Array(HASH_SIZE);
+      htab.fill(-1);
+      const packet = new Uint8Array(256);
+      let packetLen = 0;
+      let curAccum = 0;
+      let curBits = 0;
+      const writeBits = (code, nBits) => {
+        curAccum |= code << curBits;
+        curBits += nBits;
+        while (curBits >= 8) {
+          packet[packetLen++] = curAccum & 255;
+          curAccum >>= 8;
+          curBits -= 8;
+          if (packetLen === 254) {
+            this.writeByte(packetLen);
+            this.writeBytes(packet.subarray(0, packetLen));
+            packetLen = 0;
+          }
+        }
+      };
+      const flushPacket = () => {
+        if (curBits > 0) {
+          packet[packetLen++] = curAccum & 255;
+          curAccum = 0;
+          curBits = 0;
+        }
+        if (packetLen > 0) {
+          this.writeByte(packetLen);
+          this.writeBytes(packet.subarray(0, packetLen));
+          packetLen = 0;
+        }
+      };
+      writeBits(clearCode, curCodeSize);
+      if (indexedPixels.length === 0) {
+        writeBits(eofCode, curCodeSize);
+        flushPacket();
+        return;
+      }
+      let prefix = indexedPixels[0];
+      for (let i = 1; i < indexedPixels.length; i++) {
+        const k = indexedPixels[i];
+        const fcode = (k << 12) + prefix;
+        let h = k << 4 ^ prefix;
+        if (h >= HASH_SIZE) h -= HASH_SIZE;
+        let disp = 0;
+        let found = false;
+        if (htab[h] === fcode) {
+          prefix = codetab[h];
+          continue;
+        } else if (htab[h] >= 0) {
+          disp = HASH_SIZE - h;
+          if (h === 0) disp = 1;
+          do {
+            h -= disp;
+            if (h < 0) h += HASH_SIZE;
+            if (htab[h] === fcode) {
+              prefix = codetab[h];
+              found = true;
+              break;
+            }
+          } while (htab[h] >= 0);
+        }
+        if (found) continue;
+        writeBits(prefix, curCodeSize);
+        if (nextCode < 4096) {
+          codetab[h] = nextCode++;
+          htab[h] = fcode;
+          if (nextCode > maxCode && curCodeSize < 12) {
+            curCodeSize++;
+            maxCode = (1 << curCodeSize) - 1;
+          }
+        } else {
+          writeBits(clearCode, curCodeSize);
+          htab.fill(-1);
+          curCodeSize = minCodeSize + 1;
+          maxCode = (1 << curCodeSize) - 1;
+          nextCode = eofCode + 1;
+        }
+        prefix = k;
+      }
+      writeBits(prefix, curCodeSize);
+      writeBits(eofCode, curCodeSize);
+      flushPacket();
+    }
+    finish() {
+      this.writeByte(59);
+      return new Blob([this.buffer.subarray(0, this.length)], { type: "image/gif" });
+    }
+  };
+  var FastQuantizer = class {
+    palette = new Uint8Array(256 * 3);
+    // 15-bit Direct Color Lookup Cache: 32,768 entries
+    colorCache = new Int16Array(32768);
+    constructor(rgbaData, width, height, quality) {
+      this.colorCache.fill(-1);
+      this.buildPalette(rgbaData, width, height, quality);
+    }
+    getPalette() {
+      return this.palette;
+    }
+    buildPalette(rgbaData, width, height, quality) {
+      const totalPixels = width * height;
+      const step = Math.max(1, Math.min(32, Math.floor(quality * (totalPixels / 2e4) + 1)));
+      const colorCounts = /* @__PURE__ */ new Map();
+      for (let i = 0; i < totalPixels; i += step) {
+        const p = i * 4;
+        const r = rgbaData[p];
+        const g = rgbaData[p + 1];
+        const b = rgbaData[p + 2];
+        const key = r >> 3 << 10 | g >> 3 << 5 | b >> 3;
+        const entry = colorCounts.get(key);
+        if (entry) {
+          entry.r += r;
+          entry.g += g;
+          entry.b += b;
+          entry.count++;
+        } else {
+          colorCounts.set(key, { r, g, b, count: 1 });
+        }
+      }
+      const sorted = Array.from(colorCounts.values()).sort((a, b) => b.count - a.count);
+      const paletteEntries = Math.min(256, sorted.length);
+      for (let i = 0; i < paletteEntries; i++) {
+        const item = sorted[i];
+        this.palette[i * 3] = Math.round(item.r / item.count);
+        this.palette[i * 3 + 1] = Math.round(item.g / item.count);
+        this.palette[i * 3 + 2] = Math.round(item.b / item.count);
+      }
+      for (let i = paletteEntries; i < 256; i++) {
+        const v = Math.round(i * 255 / 255);
+        this.palette[i * 3] = v;
+        this.palette[i * 3 + 1] = v;
+        this.palette[i * 3 + 2] = v;
+      }
+    }
+    lookup(r, g, b) {
+      const key = r >> 3 << 10 | g >> 3 << 5 | b >> 3;
+      const cached = this.colorCache[key];
+      if (cached >= 0) return cached;
+      let bestDist = 1e7;
+      let bestIdx = 0;
+      for (let i = 0; i < 256; i++) {
+        const pr = this.palette[i * 3];
+        const pg3 = this.palette[i * 3 + 1];
+        const pb = this.palette[i * 3 + 2];
+        const dr = r - pr;
+        const dg3 = g - pg3;
+        const db = b - pb;
+        const dist = dr * dr + dg3 * dg3 + db * db;
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = i;
+          if (dist === 0) break;
+        }
+      }
+      this.colorCache[key] = bestIdx;
+      return bestIdx;
+    }
+  };
+
+  // src/renderer/features/image-conversion.ts
   function initImageConversion() {
+    initSubTabs();
+    initImageConversionSubTab();
+    initVideoToGifSubTab();
+  }
+  function initSubTabs() {
+    const subTabBtns = document.querySelectorAll(".sub-tab-btn");
+    const subTabPanes = document.querySelectorAll(".subtab-pane");
+    subTabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetSubtab = btn.dataset.subtab;
+        if (!targetSubtab) return;
+        subTabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        subTabPanes.forEach((pane) => {
+          if (pane.id === `subtab-${targetSubtab}`) {
+            pane.classList.remove("hidden");
+          } else {
+            pane.classList.add("hidden");
+          }
+        });
+      });
+    });
+  }
+  function initImageConversionSubTab() {
     const dropZone = document.getElementById("conv-drop-zone");
     const fileInput = document.getElementById(
       "conv-file-input"
@@ -28026,6 +28370,335 @@ ${d}`, p = r.createShaderModule({ code: l, label: t.name });
       files = [];
       updateUI();
     });
+  }
+  function initVideoToGifSubTab() {
+    const dropZone = document.getElementById("video-drop-zone");
+    const fileInput = document.getElementById(
+      "video-file-input"
+    );
+    const previewContainer = document.getElementById("video-preview-container");
+    const video = document.getElementById(
+      "v2g-video-element"
+    );
+    const videoInfoBadge = document.getElementById("video-info-badge");
+    const startTimeInput = document.getElementById(
+      "v2g-start-time"
+    );
+    const endTimeInput = document.getElementById(
+      "v2g-end-time"
+    );
+    const setStartBtn = document.getElementById("v2g-set-start-btn");
+    const setEndBtn = document.getElementById("v2g-set-end-btn");
+    const durationHint = document.getElementById("v2g-duration-hint");
+    const fpsSelect = document.getElementById(
+      "v2g-fps-select"
+    );
+    const widthSelect = document.getElementById(
+      "v2g-width-select"
+    );
+    const customWidthGroup = document.getElementById("v2g-custom-width-group");
+    const customWidthInput = document.getElementById(
+      "v2g-custom-width"
+    );
+    const qualitySelect = document.getElementById(
+      "v2g-quality-select"
+    );
+    const loopCheckbox = document.getElementById(
+      "v2g-loop-checkbox"
+    );
+    const progressContainer = document.getElementById("v2g-progress-container");
+    const progressBar = document.getElementById("v2g-progress-bar");
+    const progressText = document.getElementById("v2g-progress-text");
+    const progressPercent = document.getElementById("v2g-progress-percent");
+    const resultContainer = document.getElementById("v2g-result-container");
+    const resultImg = document.getElementById(
+      "v2g-result-img"
+    );
+    const resultMeta = document.getElementById("v2g-result-meta");
+    const convertBtn = document.getElementById(
+      "v2g-convert-btn"
+    );
+    const downloadBtn = document.getElementById(
+      "v2g-download-btn"
+    );
+    const resetBtn = document.getElementById(
+      "v2g-reset-btn"
+    );
+    if (!dropZone || !fileInput || !video || !convertBtn) return;
+    let currentVideoFile = null;
+    let videoObjectUrl = null;
+    let generatedGifBlob = null;
+    let isConverting = false;
+    widthSelect.addEventListener("change", () => {
+      if (widthSelect.value === "custom") {
+        customWidthGroup?.classList.remove("hidden");
+      } else {
+        customWidthGroup?.classList.add("hidden");
+      }
+    });
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone.addEventListener("dragleave", (e) => {
+      const relatedTarget = e.relatedTarget;
+      if (!relatedTarget || !dropZone.contains(relatedTarget)) {
+        dropZone.classList.remove("drag-over");
+      }
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      if (e.dataTransfer?.files.length) {
+        handleVideoFile(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files?.length) {
+        handleVideoFile(fileInput.files[0]);
+      }
+    });
+    function handleVideoFile(file) {
+      if (!file.type.startsWith("video/") && !/\.(mp4|webm|mov|mkv|avi|ogv)$/i.test(file.name)) {
+        alert("Please select a valid video file (MP4, WebM, MOV, etc.)");
+        return;
+      }
+      currentVideoFile = file;
+      if (videoObjectUrl) {
+        URL.revokeObjectURL(videoObjectUrl);
+      }
+      videoObjectUrl = URL.createObjectURL(file);
+      video.src = videoObjectUrl;
+      video.load();
+      generatedGifBlob = null;
+      resultContainer?.classList.add("hidden");
+      downloadBtn?.classList.add("hidden");
+      progressContainer?.classList.add("hidden");
+      dropZone?.classList.add("hidden");
+      previewContainer?.classList.remove("hidden");
+    }
+    video.addEventListener("loadedmetadata", () => {
+      const duration = video.duration || 0;
+      const width = video.videoWidth || 0;
+      const height = video.videoHeight || 0;
+      startTimeInput.value = "0";
+      startTimeInput.max = duration.toFixed(1);
+      const initialEnd = Math.min(5, duration);
+      endTimeInput.value = initialEnd.toFixed(1);
+      endTimeInput.max = duration.toFixed(1);
+      if (videoInfoBadge) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        const timeStr = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        videoInfoBadge.textContent = `${timeStr} \u2022 ${width}x${height}`;
+      }
+      updateDurationHint();
+    });
+    function updateDurationHint() {
+      const start = parseFloat(startTimeInput.value) || 0;
+      const end = parseFloat(endTimeInput.value) || 0;
+      const duration = Math.max(0, end - start);
+      const fps = parseInt(fpsSelect.value) || 10;
+      const estimatedFrames = Math.round(duration * fps);
+      if (durationHint) {
+        durationHint.textContent = `Clip duration: ${duration.toFixed(1)}s (Estimated frames: ${estimatedFrames})`;
+      }
+    }
+    startTimeInput.addEventListener("input", () => {
+      const val = parseFloat(startTimeInput.value) || 0;
+      video.currentTime = val;
+      updateDurationHint();
+    });
+    endTimeInput.addEventListener("input", () => {
+      const val = parseFloat(endTimeInput.value) || 0;
+      video.currentTime = val;
+      updateDurationHint();
+    });
+    fpsSelect.addEventListener("change", updateDurationHint);
+    setStartBtn?.addEventListener("click", () => {
+      const cur = video.currentTime || 0;
+      startTimeInput.value = cur.toFixed(1);
+      updateDurationHint();
+    });
+    setEndBtn?.addEventListener("click", () => {
+      const cur = video.currentTime || 0;
+      endTimeInput.value = cur.toFixed(1);
+      updateDurationHint();
+    });
+    convertBtn.addEventListener("click", async () => {
+      if (!currentVideoFile || isConverting) return;
+      const start = Math.max(0, parseFloat(startTimeInput.value) || 0);
+      const end = Math.min(video.duration || 9999, parseFloat(endTimeInput.value) || 0);
+      if (end <= start) {
+        alert("End time must be greater than start time.");
+        return;
+      }
+      const fps = parseInt(fpsSelect.value) || 10;
+      const frameInterval = 1 / fps;
+      const totalDuration = end - start;
+      const frameCount = Math.max(1, Math.round(totalDuration * fps));
+      let targetWidth = video.videoWidth || 480;
+      let targetHeight = video.videoHeight || 320;
+      const widthMode = widthSelect.value;
+      if (widthMode === "custom") {
+        const customW = parseInt(customWidthInput.value) || 480;
+        targetWidth = customW;
+        targetHeight = Math.round(video.videoHeight / video.videoWidth * targetWidth);
+      } else if (widthMode !== "original") {
+        const maxW = parseInt(widthMode);
+        if (video.videoWidth > maxW) {
+          targetWidth = maxW;
+          targetHeight = Math.round(video.videoHeight / video.videoWidth * targetWidth);
+        }
+      }
+      targetWidth = Math.round(targetWidth);
+      targetHeight = Math.round(targetHeight);
+      const isHighQuality = qualitySelect.value === "high";
+      const sampleQuality = isHighQuality ? 8 : 16;
+      const dither = isHighQuality;
+      const loopCount = loopCheckbox.checked ? 0 : 1;
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) {
+        alert("Could not initialize 2D canvas context.");
+        return;
+      }
+      isConverting = true;
+      convertBtn.disabled = true;
+      resetBtn.disabled = true;
+      downloadBtn.classList.add("hidden");
+      resultContainer?.classList.add("hidden");
+      progressContainer?.classList.remove("hidden");
+      const prevMuted = video.muted;
+      video.muted = true;
+      video.pause();
+      const gifEncoder = new GifEncoder(targetWidth, targetHeight, loopCount);
+      const frameDelayMs = Math.round(1e3 / fps);
+      try {
+        for (let i = 0; i < frameCount; i++) {
+          const currentTime = Math.min(end, start + i * frameInterval);
+          await seekVideoFast(video, currentTime);
+          ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          gifEncoder.addFrame(imageData.data, {
+            delayMs: frameDelayMs,
+            dither,
+            quality: sampleQuality
+          });
+          const progressPct = Math.round((i + 1) / frameCount * 100);
+          if (progressBar) progressBar.style.width = `${progressPct}%`;
+          if (progressPercent) progressPercent.textContent = `${progressPct}%`;
+          if (progressText) {
+            progressText.textContent = `Processing frame ${i + 1} of ${frameCount}...`;
+          }
+          if (i % 3 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+          }
+        }
+        if (progressText) progressText.textContent = "Finalizing GIF...";
+        const gifBlob = gifEncoder.finish();
+        generatedGifBlob = gifBlob;
+        const gifUrl = URL.createObjectURL(gifBlob);
+        resultImg.onload = () => {
+          resultContainer?.classList.remove("hidden");
+          downloadBtn?.classList.remove("hidden");
+        };
+        resultImg.src = gifUrl;
+        resultContainer?.classList.remove("hidden");
+        downloadBtn?.classList.remove("hidden");
+        if (resultMeta) {
+          const sizeFormatted = formatFileSize(gifBlob.size);
+          resultMeta.textContent = `${sizeFormatted} \u2022 ${targetWidth}x${targetHeight} (${frameCount} frames)`;
+        }
+        if (progressText) progressText.textContent = "Completed!";
+        setTimeout(() => {
+          progressContainer?.classList.add("hidden");
+        }, 800);
+      } catch (err) {
+        console.error("Video to GIF Conversion error:", err);
+        alert("Failed to convert video to GIF: " + (err?.message || "Unknown error"));
+        progressContainer?.classList.add("hidden");
+      } finally {
+        video.muted = prevMuted;
+        isConverting = false;
+        convertBtn.disabled = false;
+        resetBtn.disabled = false;
+      }
+    });
+    downloadBtn.addEventListener("click", async () => {
+      if (!generatedGifBlob || !currentVideoFile) return;
+      const baseName = currentVideoFile.name.replace(/\.[^/.]+$/, "");
+      const defaultPath = `${baseName}.gif`;
+      const savePath = await window.electronAPI.selectSavePath(defaultPath);
+      if (savePath) {
+        const arrayBuffer = await generatedGifBlob.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        await window.electronAPI.saveFile({ filePath: savePath, buffer });
+      }
+    });
+    resetBtn.addEventListener("click", () => {
+      if (isConverting) return;
+      if (videoObjectUrl) {
+        URL.revokeObjectURL(videoObjectUrl);
+        videoObjectUrl = null;
+      }
+      currentVideoFile = null;
+      generatedGifBlob = null;
+      video.removeAttribute("src");
+      video.load();
+      fileInput.value = "";
+      previewContainer?.classList.add("hidden");
+      dropZone?.classList.remove("hidden");
+      resultContainer?.classList.add("hidden");
+      progressContainer?.classList.add("hidden");
+      downloadBtn?.classList.add("hidden");
+    });
+  }
+  function seekVideoFast(video, timeSeconds) {
+    return new Promise((resolve) => {
+      if (Math.abs(video.currentTime - timeSeconds) < 5e-3) {
+        resolve();
+        return;
+      }
+      let done = false;
+      const timeout = setTimeout(() => {
+        if (!done) {
+          done = true;
+          video.removeEventListener("seeked", onSeeked);
+          resolve();
+        }
+      }, 200);
+      const onSeeked = () => {
+        if (!done) {
+          done = true;
+          clearTimeout(timeout);
+          video.removeEventListener("seeked", onSeeked);
+          resolve();
+        }
+      };
+      video.addEventListener("seeked", onSeeked, { once: true });
+      if ("fastSeek" in video && typeof video.fastSeek === "function") {
+        try {
+          video.fastSeek(timeSeconds);
+        } catch {
+          video.currentTime = timeSeconds;
+        }
+      } else {
+        video.currentTime = timeSeconds;
+      }
+    });
+  }
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
   }
 
   // src/renderer/features/image-resizing.ts
@@ -30182,11 +30855,30 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["path", { d: "M18 22V8a2 2 0 0 0-2-2H2" }]
   ];
 
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/download.mjs
+  var Download = [
+    ["path", { d: "M12 15V3" }],
+    ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }],
+    ["path", { d: "m7 10 5 5 5-5" }]
+  ];
+
   // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/external-link.mjs
   var ExternalLink = [
     ["path", { d: "M15 3h6v6" }],
     ["path", { d: "M10 14 21 3" }],
     ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }]
+  ];
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/film.mjs
+  var Film = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M7 3v18" }],
+    ["path", { d: "M3 7.5h4" }],
+    ["path", { d: "M3 12h18" }],
+    ["path", { d: "M3 16.5h4" }],
+    ["path", { d: "M17 3v18" }],
+    ["path", { d: "M17 7.5h4" }],
+    ["path", { d: "M17 16.5h4" }]
   ];
 
   // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/globe.mjs
@@ -30298,6 +30990,19 @@ Sitemap: ${siteUrl}/sitemap.xml`;
     ["circle", { cx: "12", cy: "12", r: "3" }]
   ];
 
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/sparkles.mjs
+  var Sparkles = [
+    [
+      "path",
+      {
+        d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+      }
+    ],
+    ["path", { d: "M20 2v4" }],
+    ["path", { d: "M22 4h-4" }],
+    ["circle", { cx: "4", cy: "20", r: "2" }]
+  ];
+
   // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/square-centerline-dashed-horizontal.mjs
   var SquareCenterlineDashedHorizontal = [
     ["path", { d: "M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h3" }],
@@ -30319,6 +31024,12 @@ Sitemap: ${siteUrl}/sitemap.xml`;
   var User = [
     ["path", { d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" }],
     ["circle", { cx: "12", cy: "7", r: "4" }]
+  ];
+
+  // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/video.mjs
+  var Video = [
+    ["path", { d: "m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" }],
+    ["rect", { x: "2", y: "6", width: "14", height: "12", rx: "2" }]
   ];
 
   // node_modules/.pnpm/lucide@1.24.0/node_modules/lucide/dist/esm/icons/zap.mjs
@@ -30449,7 +31160,11 @@ Sitemap: ${siteUrl}/sitemap.xml`;
         ExternalLink,
         Search,
         User,
-        Repeat
+        Repeat,
+        Film,
+        Video,
+        Sparkles,
+        Download
       }
     });
     initBgRemoval();
@@ -30592,7 +31307,9 @@ lucide/dist/esm/shared/src/utils/toCamelCase.mjs:
 lucide/dist/esm/shared/src/utils/toPascalCase.mjs:
 lucide/dist/esm/replaceElement.mjs:
 lucide/dist/esm/icons/crop.mjs:
+lucide/dist/esm/icons/download.mjs:
 lucide/dist/esm/icons/external-link.mjs:
+lucide/dist/esm/icons/film.mjs:
 lucide/dist/esm/icons/globe.mjs:
 lucide/dist/esm/icons/house.mjs:
 lucide/dist/esm/icons/image.mjs:
@@ -30605,9 +31322,11 @@ lucide/dist/esm/icons/ruler.mjs:
 lucide/dist/esm/icons/scissors.mjs:
 lucide/dist/esm/icons/search.mjs:
 lucide/dist/esm/icons/settings.mjs:
+lucide/dist/esm/icons/sparkles.mjs:
 lucide/dist/esm/icons/square-centerline-dashed-horizontal.mjs:
 lucide/dist/esm/icons/upload.mjs:
 lucide/dist/esm/icons/user.mjs:
+lucide/dist/esm/icons/video.mjs:
 lucide/dist/esm/icons/zap.mjs:
 lucide/dist/esm/lucide.mjs:
   (**
